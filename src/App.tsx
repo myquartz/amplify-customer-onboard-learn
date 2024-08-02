@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
-import { useAuthenticator, Authenticator } from '@aws-amplify/ui-react';
+import { Amplify } from 'aws-amplify';
+import { useAuthenticator, Authenticator, Button } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 const client = generateClient<Schema>();
@@ -11,6 +12,7 @@ function App() {
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
 
   const { authStatus } = useAuthenticator(context => [context.authStatus]);
+  const { forceLogin, setForceLogin } = useState<String>('');
 
   useEffect(() => {
     client.models.Todo.observeQuery().subscribe({
@@ -30,16 +32,20 @@ function App() {
     client.models.Todo.delete({ id })
   }
 
+  const handleLogin = async () => {
+    setForceLogin('please');
+  };
+
   return (  
     <main>
       {authStatus === 'configuring' && 'Loading...'}
-      {authStatus !== 'authenticated' ?
+      {authStatus !== 'authenticated' || setForceLogin == 'please' ?
       <Authenticator>
       {({ signOut, user }) => (
         <div>
           <h1>{user?.signInDetails?.loginId}'s todos</h1>
-          <button onClick={refreshTodo}>Refresh</button>
-          <button onClick={createTodo}>+ new</button>
+          <Button onClick={refreshTodo}>Refresh</Button>
+          <Button onClick={createTodo}>+ new</Button>
           <ul>
             {todos.map((todo) => (
               <li 
@@ -48,20 +54,23 @@ function App() {
             ))}
           </ul>
           <div>
-            <button onClick={signOut}>Sign out</button>
+            <Button onClick={signOut}>Sign out</Button>
           </div>
         </div>    
       )}
     </Authenticator>
     : <div>
         <h1>Anonymous list todos</h1>
-        <button onClick={refreshTodo}>Refresh</button>
-        <button onClick={createTodo}>+ new</button>
+        <Button onClick={refreshTodo}>Refresh</Button>
+        <Button onClick={createTodo}>+ new</Button>
         <ul>
           {todos.map((todo) => (
             <li key={todo.id}>{todo.content}</li>
           ))}
         </ul>
+        <div>
+          <Button onClick={handleLogin}>Click here to login</Button>
+        </div>
       </div>
     }
     </main>
