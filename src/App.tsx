@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
-import { Amplify } from 'aws-amplify';
 import { useAuthenticator, Authenticator, Button } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
@@ -12,7 +11,7 @@ function App() {
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
 
   const { authStatus } = useAuthenticator(context => [context.authStatus]);
-  const { forceLogin, setForceLogin } = useState<String>('');
+  const [forceLogin, setForceLogin] = useState('');
 
   useEffect(() => {
     client.models.Todo.observeQuery().subscribe({
@@ -39,7 +38,7 @@ function App() {
   return (  
     <main>
       {authStatus === 'configuring' && 'Loading...'}
-      {authStatus !== 'authenticated' || setForceLogin == 'please' ?
+      {authStatus !== 'authenticated' || forceLogin == 'please' ?
       <Authenticator>
       {({ signOut, user }) => (
         <div>
