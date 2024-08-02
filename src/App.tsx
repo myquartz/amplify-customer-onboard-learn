@@ -14,9 +14,10 @@ function App() {
   const [showEditForm, setEditForm ] = useState(false);
 
   useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
+    const sub = client.models.Todo.observeQuery().subscribe({
       next: (data) => setTodos([...data.items]),
     });
+    return () => sub.unsubscribe();
   }, []);
 
   function refreshTodo() {
