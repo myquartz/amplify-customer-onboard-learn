@@ -11,7 +11,6 @@ const schema = a.schema({
     .model({
       content: a.string(),
       isDone: a.boolean(),
-      
     })
     .authorization((allow) => [allow.guest(), allow.owner()]),
 });
