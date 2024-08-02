@@ -2,10 +2,11 @@ import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 
-const backend = defineBackend({
+//const backend = 
+defineBackend({
   auth,
   data,
 });
 
-const { cfnIdentityPool } = backend.auth.resources.cfnResources;
-cfnIdentityPool.allowUnauthenticatedIdentities = true;
+/*const { cfnIdentityPool } = backend.auth.resources.cfnResources;
+cfnIdentityPool.allowUnauthenticatedIdentities = true;*/
