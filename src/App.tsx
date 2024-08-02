@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
-import { Authenticator } from '@aws-amplify/ui-react'
-import '@aws-amplify/ui-react/styles.css'
+import { useAuthenticator, Authenticator } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
 
 const client = generateClient<Schema>();
 
 function App() {
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+
+  const { authStatus } = useAuthenticator(context => [context.authStatus]);
 
   useEffect(() => {
     client.models.Todo.observeQuery().subscribe({
@@ -29,9 +31,12 @@ function App() {
   }
 
   return (  
-    <Authenticator>
+    <main>
+      {authStatus === 'configuring' && 'Loading...'}
+      {authStatus !== 'authenticated' ?
+      <Authenticator>
       {({ signOut, user }) => (
-        <main>
+        <div>
           <h1>{user?.signInDetails?.loginId}'s todos</h1>
           <button onClick={refreshTodo}>Refresh</button>
           <button onClick={createTodo}>+ new</button>
@@ -45,9 +50,21 @@ function App() {
           <div>
             <button onClick={signOut}>Sign out</button>
           </div>
-        </main>    
+        </div>    
       )}
     </Authenticator>
+    : <div>
+        <h1>Anonymous list todos</h1>
+        <button onClick={refreshTodo}>Refresh</button>
+        <button onClick={createTodo}>+ new</button>
+        <ul>
+          {todos.map((todo) => (
+            <li key={todo.id}>{todo.content}</li>
+          ))}
+        </ul>
+      </div>
+    }
+    </main>
   );
 }
 
