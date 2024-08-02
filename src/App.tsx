@@ -16,6 +16,10 @@ function App() {
     });
   }, []);
 
+  function refreshTodo() {
+    client.models.Todo.list().then((data) => setTodos(data.data));
+  }
+
   function createTodo() {
     client.models.Todo.create({ content: window.prompt("Todo content") });
   }
@@ -29,6 +33,7 @@ function App() {
       {({ signOut, user }) => (
         <main>
           <h1>{user?.signInDetails?.loginId}'s todos</h1>
+          <button onClick={refreshTodo}>Refresh</button>
           <button onClick={createTodo}>+ new</button>
           <ul>
             {todos.map((todo) => (
