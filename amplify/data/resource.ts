@@ -16,15 +16,15 @@ const schema = a.schema({
     })
     .identifier(["seqKey"])
     .authorization(allow => [allow.authenticated().to(['read','list']), allow.group('CIFOperators')]),
-  nextCIFSequence: a
+  
+    /*nextCIFSequence: a
     .mutation().returns(a.ref("CIFSequence"))
     .handler(a.handler.custom({
       dataSource: a.ref("CIFSequence"),
       entry: './increase-sequence.js'
     }))
-    .authorization(allow => [allow.authenticated()]),
-  });
-  /*
+    .authorization(allow => [allow.authenticated()]), */
+  
   Customer: a
     .model({
       customerId: a.id().required().authorization(allow => [allow.authenticated().to(['read','list','search'])]),
@@ -84,7 +84,7 @@ const schema = a.schema({
       index("contactEmail")
     ])
     .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
-}); */
+});
 
 export type Schema = ClientSchema<typeof schema>;
 
