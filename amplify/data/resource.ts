@@ -7,16 +7,7 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  CIFSequence: a
-    .model({
-      seqKey: a.string().required(),
-      lastCifNumber: a.integer().required(),
-      lastUpdateTime: a.timestamp().required()
-    })
-    .identifier(["seqKey"])
-    .authorization(allow => [allow.authenticated()]),
-});
-/*
+
   CIFSequence: a
     .model({
       seqKey: a.string().required(),
@@ -32,7 +23,8 @@ const schema = a.schema({
       entry: './increase-sequence.js'
     }))
     .authorization(allow => [allow.authenticated()]),
-
+  });
+  /*
   Customer: a
     .model({
       customerId: a.id().required().authorization(allow => [allow.authenticated().to(['read','list','search'])]),
