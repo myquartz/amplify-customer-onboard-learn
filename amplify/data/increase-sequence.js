@@ -6,8 +6,12 @@ export function request(ctx) {
     key: util.dynamodb.toMapValues({ seqKey: "customerSeq"}),
     update: {
       expression: 'SET #cnt = #cnt + :val, #time = :now',
-      expressionAttributeNames: {'#cnt': 'lastCifNumber','#time':'lastUpdateTime'},
-      expressionValues: { ':val': 1, ':now': (new Date()).toUTCString() },
+      expressionNames: {'#cnt': 'lastCifNumber','#time':'lastUpdateTime'},
+      expressionValues: { ':val': { 
+            "N": "1"
+        }, ':now': {
+            "S": util.time.nowISO8601()
+        } },
       returnValues: "UPDATED_NEW"
     }
   }

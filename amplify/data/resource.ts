@@ -15,7 +15,7 @@ const schema = a.schema({
       lastUpdateTime: a.timestamp().required()
     })
     .identifier(["seqKey"])
-    .authorization(allow => [allow.authenticated()]),
+    .authorization(allow => [allow.authenticated().to(['read','list']), allow.group('CIFOperators')]),
   nextCIFSequence: a
     .mutation().returns(a.ref("CIFSequence"))
     .handler(a.handler.custom({
