@@ -26,7 +26,7 @@ const schema = a.schema({
   
   Customer: a
     .model({
-      customerId: a.id().required().authorization(allow => [allow.authenticated().to(['read','list','search'])]),
+      customerId: a.id().required(),
       customerName: a.string().required(),
       cifNumber: a.integer(),
       phoneNumber: a.phone(),
@@ -34,7 +34,7 @@ const schema = a.schema({
       isDeleted: a.boolean(),
       //idcards: a.hasMany('CustomerIdCards', 'customerId'),
       //contacts: a.hasMany('CustomerContacts', 'contactId'),
-      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
+      //owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["customerId"])
     .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber")])
