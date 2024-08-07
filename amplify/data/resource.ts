@@ -32,14 +32,15 @@ const schema = a.schema({
       phoneNumber: a.phone(),
       legalId: a.string(),
       isDeleted: a.boolean(),
-      idcards: a.hasMany('CustomerIdCards', 'customerId'),
-      contacts: a.hasMany('CustomerContacts', 'contactId'),
-      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
+      //idcards: a.hasMany('CustomerIdCards', 'customerId'),
+      //contacts: a.hasMany('CustomerContacts', 'contactId'),
+      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["customerId"])
     .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber")])
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
 
+    /*
   CustomerIdCards: a
     .model({
       idCardId: a.id().required(),
@@ -82,7 +83,7 @@ const schema = a.schema({
       index("contactPhone"),
       index("contactEmail")
     ])
-    .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
+    .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]), */
 });
 
 export type Schema = ClientSchema<typeof schema>;
