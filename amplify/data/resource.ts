@@ -11,8 +11,7 @@ const schema = a.schema({
   CIFSequence: a
     .model({
       seqKey: a.string().required(),
-      lastCifNumber: a.integer().required(),
-      lastUpdateTime: a.timestamp().required()
+      lastCifNumber: a.integer().required()
     })
     .identifier(["seqKey"])
     .authorization(allow => [allow.authenticated().to(['read','list']), allow.group('CIFOperators')]),
