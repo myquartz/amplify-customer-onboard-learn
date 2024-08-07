@@ -7,13 +7,73 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
+  CIFSequence: a.model({
+    seqKey: a.string().required(),
+    lastCifNumber: a.integer().required(),
+    lastUpdateTime: a.timestamp().required()
+  }).identifier(["seqKey"]).authorization(allow => [allow.authenticated()]),
+  nextCIFSequence: a.mutation().returns(a.ref("CIFSequence"))
+  .handler(a.handler.custom({
+    dataSource: a.ref("CIFSequence"),
+    entry: './increase-sequence.js'
+  }))
+  .authorization(allow => [allow.authenticated()]),
+
+  Customer: a
     .model({
-      content: a.string(),
-      isDone: a.boolean(),
-      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete'])]),
+      customerId: a.id().required().authorization(allow => [allow.authenticated().to(['read','list','search'])]),
+      customerName: a.string().required(),
+      cifNumber: a.integer(),
+      phoneNumber: a.phone(),
+      legalId: a.string(),
+      isDeleted: a.boolean(),
+      idcards: a.hasMany('CustomerIdCards', 'customerId'),
+      contacts: a.hasMany('CustomerContacts', 'contactId'),
+      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
     })
+    .identifier(["customerId"])
+    .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber")])
     .authorization((allow) => [allow.owner()]),
+  CustomerIdCards: a.model({
+    idCardId: a.id().required(),
+    idNumber: a.string().required(),
+    nameOnCard: a.string().required(),
+    familyName: a.string(),
+    surName: a.string(),
+    midName: a.string(),
+    dateOfBirth: a.date().required(),
+    nationalityCode: a.string().required(),
+    issueDate: a.date().required(),
+    expireDate: a.date(),
+    expiredOrInvalidState: a.boolean(),
+    otherIdData: a.json(),
+    idCardsOwner: a.belongsTo("Customer","customerId"),
+    lastUpdateTime: a.timestamp().required(),
+    lastUpdateBy: a.string().required()
+  })
+  .identifier(["idCardId","idNumber"])
+  .secondaryIndexes((index) => [
+    index("idNumber").sortKeys(["dateOfBirth"]),
+    index("nameOnCard").queryField("searchByName")
+  ])
+  .authorization((allow) => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
+  CustomerContacts: a.model({
+    contactId: a.id().required(),
+    contactScope: a.enum(["primary","secondary","refer","other"]),
+    contactType: a.enum(["phone","email","instant-messenger","other"]),
+    contactPhone: a.phone(),
+    contactEmail: a.email(),
+    contactReferenceKey: a.string().authorization((allow) => [allow.owner().to(['read', 'list']), allow.group('CIFOperators')]),
+    contactOwner: a.belongsTo("Customer","customerId").authorization((allow) => [allow.owner().to(['read', 'list']), allow.group('CIFOperators')]),
+    lastUpdateTime: a.timestamp().required(),
+    lastUpdateBy: a.string().required(),
+  })
+  .identifier(["contactId"])
+  .secondaryIndexes((index) => [
+    index("contactPhone"),
+    index("contactEmail")
+  ])
+  .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -23,9 +83,10 @@ export const data = defineData({
   authorizationModes: {
     defaultAuthorizationMode: 'userPool', //identityPool, userPool, apiKey
     // API Key is used for a.allow.public() rules
+    /*
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
-    },
+    },*/
   },
 });
 

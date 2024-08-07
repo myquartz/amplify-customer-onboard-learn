@@ -2,33 +2,52 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
-import { Authenticator, Button, Flex, Fieldset, TextAreaField, CheckboxField } from '@aws-amplify/ui-react';
+import { Authenticator, Button, Flex, Fieldset, TextField, CheckboxField } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 const client = generateClient<Schema>();
 
 function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [customerList, setCustomerList] = useState<Array<Schema["Customer"]["type"]>>([]);
 
-  const [editingContent, setEditingContent ] = useState('');
-  const [showEditForm, setEditForm ] = useState(false);
+  const [editCustomerId, setEditCustomerId ] = useState('');
+  const [searchingPhone, setSearchingPhone ] = useState('');
+  const [searchingCIFNumber, setSearchingCIFNumber ] = useState(0);
+  const [showSearchForm, setShowSearchForm ] = useState(false);
 
   useEffect(() => {
-    const sub = client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-    return () => sub.unsubscribe();
-  }, []);
+    if(searchingCIFNumber > 0) {
+      client.models.Customer.listCustomerByCifNumber({ cifNumber: searchingCIFNumber }).then(
+        (resp) => {
+          setCustomerList(resp.data)
+        });
+    }
+    else if(searchingPhone) {
+      client.models.Customer.listCustomerByPhoneNumber({ phoneNumber: searchingPhone }).then(
+        (resp) => {
+          setCustomerList(resp.data)
+        });
+    }
+    else {
+      const sub = client.models.Customer.observeQuery().subscribe({
+        next: (data) => setCustomerList([...data.items]),
+      });
+      return () => sub.unsubscribe();
+    }
+  }, [searchingPhone, searchingCIFNumber]);
 
-  function refreshTodo() {
-    client.models.Todo.list().then((data) => setTodos(data.data));
+  function openSearchForm() {
+    if(showSearchForm) {
+      setSearchingPhone('');
+      setSearchingCIFNumber(0);
+      setEditCustomerId('');
+      setShowSearchForm(false);  
+    }
+    else
+      setShowSearchForm(true);
   }
 
-  function showCreateTodo() {
-    setEditForm(true);
-  }
-
-  function createTodo(event: any) {
+  /*function createTodo(event: any) {
     event.preventDefault();
     console.debug('event', event.target);
     client.models.Todo.create({content:event.target.content.value})
@@ -55,10 +74,13 @@ function App() {
       });
     }
   }
+  */
 /*
   function deleteTodo(id: string) {
     client.models.Todo.delete({ id })
   }
+
+  <Button onClick={refreshTodo}>Refresh</Button>
     */
 
   return (  
@@ -67,32 +89,30 @@ function App() {
       ({ signOut, user }) => (
         <main>
           <h1>{user?.signInDetails?.loginId}'s todos</h1>
-          <Button onClick={refreshTodo}>Refresh</Button>
-          <Button onClick={showCreateTodo}>+ new</Button>
+          
+          <Button onClick={openSearchForm}>search</Button>
           <ul>
-            {todos.map((todo) => (
-              <li 
-              key={todo.id}>{todo.content}
-              <CheckboxField
-                label="done"
-                name="isDone" readOnly={false}
-                checked={todo?.isDone?true:false}
-                onChange={(event) => toggleDoneState(todo.id, event.target.checked)}
-              /></li>
+            {customerList.map((cust) => (
+              <li key={cust.customerId}>
+                CustomerID: {cust.customerId}<br />
+                CIF Number: {cust.cifNumber}<br />
+                Full name: {cust.customerName}<br />
+                Legal ID: {cust.legalId}<br />  
+              </li>
             ))}
           </ul>
           <div>
   {
-  showEditForm ? 
-  <Flex as="form" direction="column" onSubmit={createTodo}>
+  showSearchForm ? 
+  <Flex as="form" direction="column">
+    {editCustomerId}
     <Fieldset
       legend="Add new to do"
       variation="plain"
       direction="column">
-        <TextAreaField name="content" label="To do note" placeholder="Please enter your text" value={editingContent} 
-          onChange={(event) => setEditingContent(event.target.value)}
-          isRequired={true} readOnly={false} />
-        <Button type="submit">Create</Button>
+        <TextField name="cifNumber" label="Seach by CIFNumber" placeholder="Your number" value={searchingCIFNumber} 
+          readOnly={false} />
+        <Button type="submit">Seach</Button>
     </Fieldset>
   </Flex> : <span>No action</span>
   }
