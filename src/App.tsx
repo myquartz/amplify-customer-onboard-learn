@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
+//import { useEffect, useState } from "react";
+//import type { Schema } from "../amplify/data/resource";
+//import { generateClient } from "aws-amplify/data";
 
-import { Authenticator, Button, Flex, Fieldset, TextField, CheckboxField } from '@aws-amplify/ui-react';
+//import { Authenticator, Button, Flex, Fieldset, TextField } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
-const client = generateClient<Schema>();
+//const client = generateClient<Schema>();
 
 function App() {
-  const [customerList, setCustomerList] = useState<Array<Schema["Customer"]["type"]>>([]);
+  /*const [customerList, setCustomerList] = useState<Array<Schema["Customer"]["type"]>>([]);
 
   const [editCustomerId, setEditCustomerId ] = useState('');
   const [searchingPhone, setSearchingPhone ] = useState('');
@@ -46,7 +46,7 @@ function App() {
     else
       setShowSearchForm(true);
   }
-
+*/
   /*function createTodo(event: any) {
     event.preventDefault();
     console.debug('event', event.target);
@@ -82,7 +82,7 @@ function App() {
 
   <Button onClick={refreshTodo}>Refresh</Button>
     */
-
+/*
   return (  
     <Authenticator>
       {
@@ -121,7 +121,8 @@ function App() {
         </main>)
     }
     </Authenticator>
-  );
+  );*/
+  return (<main>Hello</main>);
 }
 
 export default App;
