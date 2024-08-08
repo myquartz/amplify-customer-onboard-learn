@@ -32,8 +32,8 @@ const schema = a.schema({
       phoneNumber: a.phone(),
       legalId: a.string(),
       isDeleted: a.boolean(),
-      idcards: a.hasMany('CustomerIdCards', 'customerId'),
-      contacts: a.hasMany('CustomerContacts', 'contactId'),
+      idcards: a.hasMany('CustomerIdCards', 'ownCustomerId'),
+      contacts: a.hasMany('CustomerContacts', 'ownCustomerId'),
       owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["customerId"])
@@ -42,7 +42,8 @@ const schema = a.schema({
 
   CustomerIdCards: a
     .model({
-      idCardId: a.id().required(),
+      ownCustomerId: a.id().required(),
+      cardIndex: a.integer().required(),
       idNumber: a.string().required(),
       nameOnCard: a.string().required(),
       familyName: a.string(),
@@ -54,28 +55,30 @@ const schema = a.schema({
       expireDate: a.date(),
       expiredOrInvalidState: a.boolean(),
       otherIdData: a.json(),
-      idCardsOwner: a.belongsTo("Customer","customerId"),
+      ownCustomer: a.belongsTo("Customer","ownCustomerId"),
       updatedBy: a.string()
     })
-    .identifier(["idCardId","idNumber"])
+    .identifier(["ownCustomerId", "cardIndex"])
     .secondaryIndexes((index) => [
-      index("idNumber").sortKeys(["dateOfBirth"]),
+      index("idNumber").sortKeys(["dateOfBirth"]).queryField("searchByIdNumber"),
       index("nameOnCard").queryField("searchByName")
     ])
     .authorization((allow) => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
 
   CustomerContacts: a
     .model({
-      contactId: a.id().required(),
+      ownCustomerId: a.id().required(),
+      contactIndex: a.integer().required(),
       contactScope: a.enum(["primary","secondary","refer","other"]),
       contactType: a.enum(["phone","email","instant_messenger","other"]),
       contactPhone: a.phone(),
       contactEmail: a.email(),
-      contactReferenceKey: a.string().authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
-      contactOwner: a.belongsTo("Customer","customerId").authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
+      contactVerified: a.boolean().authorization((allow) => [allow.owner().to(['read','delete']), allow.group('CIFOperators')]),
+      contactVerificationKey: a.string().authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
+      ownCustomer: a.belongsTo("Customer","ownCustomerId"),
       updatedBy: a.string()
     })
-    .identifier(["contactId"])
+    .identifier(["ownCustomerId", "contactIndex"])
     .secondaryIndexes((index) => [
       index("contactPhone"),
       index("contactEmail")
