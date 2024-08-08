@@ -55,8 +55,7 @@ const schema = a.schema({
       expiredOrInvalidState: a.boolean(),
       otherIdData: a.json(),
       idCardsOwner: a.belongsTo("Customer","customerId"),
-      lastUpdateTime: a.timestamp().required(),
-      lastUpdateBy: a.string().required()
+      updatedBy: a.string()
     })
     .identifier(["idCardId","idNumber"])
     .secondaryIndexes((index) => [
@@ -69,13 +68,12 @@ const schema = a.schema({
     .model({
       contactId: a.id().required(),
       contactScope: a.enum(["primary","secondary","refer","other"]),
-      contactType: a.enum(["phone","email","instant-messenger","other"]),
+      contactType: a.enum(["phone","email","instant_messenger","other"]),
       contactPhone: a.phone(),
       contactEmail: a.email(),
       contactReferenceKey: a.string().authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
       contactOwner: a.belongsTo("Customer","customerId").authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
-      lastUpdateTime: a.timestamp().required(),
-      lastUpdateBy: a.string().required(),
+      updatedBy: a.string()
     })
     .identifier(["contactId"])
     .secondaryIndexes((index) => [
