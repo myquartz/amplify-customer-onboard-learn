@@ -14,7 +14,7 @@ const schema = a.schema({
       lastCifNumber: a.integer().required()
     })
     .identifier(["seqKey"])
-    .authorization(allow => [allow.authenticated().to(['read','list']), allow.group('CIFOperators')]),
+    .authorization(allow => [allow.authenticated().to(['read']), allow.group('CIFOperators')]),
   
     /*nextCIFSequence: a
     .mutation().returns(a.ref("CIFSequence"))
@@ -32,15 +32,14 @@ const schema = a.schema({
       phoneNumber: a.phone(),
       legalId: a.string(),
       isDeleted: a.boolean(),
-      //idcards: a.hasMany('CustomerIdCards', 'customerId'),
-      //contacts: a.hasMany('CustomerContacts', 'contactId'),
-      //owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
+      idcards: a.hasMany('CustomerIdCards', 'customerId'),
+      contacts: a.hasMany('CustomerContacts', 'contactId'),
+      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["customerId"])
-    //.secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber")])
+    .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber")])
     .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
 
-    /*
   CustomerIdCards: a
     .model({
       idCardId: a.id().required(),
@@ -73,8 +72,8 @@ const schema = a.schema({
       contactType: a.enum(["phone","email","instant-messenger","other"]),
       contactPhone: a.phone(),
       contactEmail: a.email(),
-      contactReferenceKey: a.string().authorization((allow) => [allow.owner().to(['read', 'list']), allow.group('CIFOperators')]),
-      contactOwner: a.belongsTo("Customer","customerId").authorization((allow) => [allow.owner().to(['read', 'list']), allow.group('CIFOperators')]),
+      contactReferenceKey: a.string().authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
+      contactOwner: a.belongsTo("Customer","customerId").authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
       lastUpdateTime: a.timestamp().required(),
       lastUpdateBy: a.string().required(),
     })
@@ -83,7 +82,7 @@ const schema = a.schema({
       index("contactPhone"),
       index("contactEmail")
     ])
-    .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]), */
+    .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
