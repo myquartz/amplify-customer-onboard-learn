@@ -37,7 +37,7 @@ const schema = a.schema({
       //owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["customerId"])
-    .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber")])
+    //.secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber")])
     .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
 
     /*
