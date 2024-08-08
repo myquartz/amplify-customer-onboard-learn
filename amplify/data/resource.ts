@@ -16,13 +16,13 @@ const schema = a.schema({
     .identifier(["seqKey"])
     .authorization(allow => [allow.authenticated().to(['read']), allow.group('CIFOperators')]),
   
-    /*nextCIFSequence: a
+    nextCIFSequence: a
     .mutation().returns(a.ref("CIFSequence"))
     .handler(a.handler.custom({
       dataSource: a.ref("CIFSequence"),
       entry: './increase-sequence.js'
     }))
-    .authorization(allow => [allow.authenticated()]), */
+    .authorization(allow => [allow.authenticated()]),
   
   Customer: a
     .model({

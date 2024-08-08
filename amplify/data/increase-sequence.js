@@ -1,14 +1,22 @@
 import { util } from '@aws-appsync/utils';
-import * as ddb from '@aws-appsync/utils/dynamodb';
 
 export function request(ctx) {
-    const { seqKey, ...values } = ctx.args.input;
-	values.lastCifNumber = ddb.operations.increment(1);
-    values.lastUpdateTime = util.time.nowISO8601();
-	const condition = { seqKey: { attributeExists: true } };
-	return ddb.update({ key: { "seqKey":"customerSEQ" }, update: values, condition });
+  
+  return {
+    operation: 'UpdateItem',
+    key: util.dynamodb.toMapValues({ "seqKey":"customerSEQ" }),
+    update: {
+        expression: 'ADD #cnt :val',
+        expressionNames: { '#cnt': 'lastCifNumber' },
+        expressionValues: util.dynamodb.toMapValues({ ':val': 1 }),
+    },
+  };
 }
 
 export function response(ctx) {
-  return ctx.result
+      const { error, result } = ctx;
+    if (error) {
+        return util.appendError(error.message, error.type, result);
+    }
+    return result;
 }
