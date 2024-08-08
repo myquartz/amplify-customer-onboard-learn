@@ -11,10 +11,10 @@ const schema = a.schema({
   CIFSequence: a
     .model({
       seqKey: a.string().required(),
-      lastCifNumber: a.integer().required()
+      currentCifNumber: a.integer().required()
     })
     .identifier(["seqKey"])
-    .authorization(allow => [allow.authenticated().to(['read']), allow.group('CIFOperators')]),
+    .authorization(allow => [allow.publicApiKey(), allow.authenticated().to(['read']), allow.group('CIFOperators')]),
   
     nextCIFSequence: a
     .mutation().returns(a.ref("CIFSequence"))
@@ -28,6 +28,8 @@ const schema = a.schema({
     .model({
       customerId: a.id().required(),
       customerName: a.string().required(),
+      dateOfBirth: a.date().required(),
+      sexual: a.enum(['male','female','undisclosed']),
       cifNumber: a.integer(),
       phoneNumber: a.phone(),
       legalId: a.string(),

@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
-import { Authenticator, Button, Flex, Fieldset, TextField } from '@aws-amplify/ui-react';
+import { Authenticator, View, Grid, Card,  Menu, MenuItem, Divider,
+   Button, Flex, Fieldset, TextField,} from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 const client = generateClient<Schema>();
@@ -47,6 +48,16 @@ function App() {
       setShowSearchForm(true);
   }
 
+  function forceSearch(event: any) {
+    event.preventDefault();
+    console.debug('event', event.target);
+    client.models.Customer.list().then(
+      (resp) => {
+        console.debug('data', resp);
+        setCustomerList(resp.data)
+      });
+  }
+
   /*function createTodo(event: any) {
     event.preventDefault();
     console.debug('event', event.target);
@@ -85,12 +96,50 @@ function App() {
 
   return (  
     <Authenticator>
-      {
-      ({ signOut, user }) => (
-        <main>
-          <h1>{user?.signInDetails?.loginId}'s todos</h1>
-          
-          <Button onClick={openSearchForm}>search</Button>
+      {({ signOut, user }) => (
+        <View as="main" height="40rem" maxWidth="100%" padding="1rem" width="80rem">
+          <Grid
+  columnGap="0.5rem"
+  rowGap="0.5rem"
+  templateColumns="1fr 1fr 1fr"
+  templateRows="1fr 3fr 1fr"
+>
+  <Card
+    columnStart="1"
+    columnEnd="-1"
+  >
+    <View id="loginId">{user?.signInDetails?.loginId}</View>
+    <Menu menuAlign="end">
+      <MenuItem onClick={() => alert('Download')}>
+        Download
+      </MenuItem>
+      <MenuItem onClick={() => alert('Create a Copy')}>
+        Create a Copy
+      </MenuItem>
+      <MenuItem onClick={() => alert('Mark as Draft')}>
+        Mark as Draft
+      </MenuItem>
+      <Divider />
+      <MenuItem isDisabled onClick={() => alert('Delete')}>
+        Delete
+      </MenuItem>
+      <MenuItem onClick={signOut}>
+        Sign out
+      </MenuItem>
+    </Menu>
+    
+  </Card>
+  <Card
+    columnStart="1"
+    columnEnd="2"
+  >
+    Nav
+  </Card>
+  <Card
+    columnStart="2"
+    columnEnd="-1"
+  >
+     <Button onClick={openSearchForm}>search</Button>
           <ul>
             {customerList.map((cust) => (
               <li key={cust.customerId}>
@@ -112,14 +161,26 @@ function App() {
       direction="column">
         <TextField name="cifNumber" label="Seach by CIFNumber" placeholder="Your number" value={searchingCIFNumber} 
           readOnly={false} />
-        <Button type="submit">Seach</Button>
+        <Button type="submit" onClick={forceSearch}>Seach</Button>
     </Fieldset>
   </Flex> : <span>No action</span>
   }
-            <Button onClick={signOut}>Sign out</Button>
           </div>
-        </main>)
-    }
+  </Card>
+  <Card
+    columnStart="2"
+    columnEnd="-1"
+  >
+    Footer
+  </Card>
+</Grid>
+
+          
+          
+          
+         
+      </View>
+    )}
     </Authenticator>
   );
   //return (<main>Hello</main>);
