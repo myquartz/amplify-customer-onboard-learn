@@ -36,19 +36,22 @@ function App() {
       client.models.Customer.listCustomerByCifNumber({ cifNumber: parseInt(searchValue) }).then(
         (resp) => {
           setCustomerList(resp.data)
-        });
+        })
+        .catch((err) => setErrors(err.errors ?? [ {message: "Error "+JSON.stringify(err) }]));
       break;
     case "phone":
       client.models.Customer.listCustomerByPhoneNumber({ phoneNumber: searchValue }).then(
         (resp) => {
           setCustomerList(resp.data)
-        });
+        })
+        .catch((err) => setErrors(err.errors ?? [ {message: "Error "+JSON.stringify(err) }]));
       break;
     case "nid":
       client.models.Customer.listCustomerByLegalId({ legalId: searchValue }).then(
         (resp) => {
           setCustomerList(resp.data)
-        });
+        })
+        .catch((err) => setErrors(err.errors ?? [ {message: "Error "+JSON.stringify(err) }]));
       break;
     default:
       const sub = client.models.Customer.observeQuery().subscribe({
