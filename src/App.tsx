@@ -18,8 +18,6 @@ function App() {
   const [searchField, setSearchField ] = useState('nid');
   const [searchValue, setSearchValue] = useState('');
 
-  //const [editCustomerId, setEditCustomerId ] = useState('');
-
   const [addCustomerForm, setAddCustomerForm ] = useState(false);
 
   const [errors, setErrors ] = useState([] as Array<Object>);
@@ -107,8 +105,8 @@ function App() {
   function clickAddNewCustomer(event: any) {
     event.preventDefault();
     console.debug('event', event.target);
+    setEditCustomerId('');
     setAddCustomerForm(true);
-
   }
   
   async function addCustomer(cust: Schema["Customer"]["type"])  {
@@ -129,6 +127,58 @@ function App() {
       setErrors([err as any]);
     }
   }
+
+  const [editCustomerId, setEditCustomerId ] = useState('');
+  const [customerObj, setCustomerObj ] = useState({} as Schema["Customer"]["type"]);
+
+  useEffect(() => {
+    if(!editCustomerId)
+      return;
+    clearError();
+    setCustomerObj({} as Schema["Customer"]["type"]);
+    client.models.Customer.get({ customerId: editCustomerId })
+    .then(
+      (resp) => {
+        console.debug('resp',resp);
+        setCustomerObj(resp.data as Schema["Customer"]["type"]);
+      })
+      .catch(catchError);
+  }, [editCustomerId]);
+
+  function clickEditCustomer(id: string) {
+    if(id)
+      setEditCustomerId(id);
+    else {
+      setEditCustomerId('');
+      setCustomerObj({} as Schema["Customer"]["type"]);
+    }
+  }
+
+  async function updateCustomer(cust: Schema["Customer"]["type"])  {
+    try {
+      if(!cust.cifNumber) {
+        const nextCif = await client.mutations.nextCIFSequence();
+        if(nextCif.errors)
+          setErrors(nextCif.errors);
+        else {
+          cust.cifNumber = nextCif.data?.currentCifNumber;
+        }
+      }
+
+      if(cust.cifNumber) {
+        const custResp = await client.models.Customer.update(cust);
+        console.log(custResp);
+        if(custResp.errors)
+          setErrors(custResp.errors);
+        else
+          setCustomerObj(custResp.data as Schema["Customer"]["type"]);
+      }
+    }
+    catch(err) {
+      setErrors([err as any]);
+    }
+  }
+
   /*
   function toggleDoneState(id: string, isDoneNew: boolean) {
     const c = todos.find((i) => i.id == id);
@@ -231,10 +281,11 @@ function App() {
           maxWidth="100%"
           variation="outlined"
         >
+          <Button onClick={() => clickEditCustomer(item.customerId)} style={{float: 'right'}}>Edit</Button>
           CustomerID: {item.customerId}<br />
-              CIF Number: {item.cifNumber}<br />
-              Full name: {item.customerName}<br />
-              Legal ID: {item.legalId}<br />  
+          CIF Number: {item.cifNumber}<br />
+          Full name: {item.customerName}<br />
+          Legal ID: {item.legalId}<br />  
         </Card>
       )}
       </Collection>
@@ -249,10 +300,15 @@ function App() {
     columnStart="2"
     columnEnd="-1"
   >
-    { addCustomerForm ?
+    { editCustomerId && customerObj.customerId ? 
+        <CustomerEditForm
+          customer={customerObj} addCustomer={(cust: Schema["Customer"]["type"]) => console.log("add fake",cust)}
+          updateCustomer={updateCustomer}
+        />
+      : addCustomerForm ?
       <CustomerEditForm
         customer={null} addCustomer={addCustomer}
-        updateCustomer={(cust: Schema["Customer"]["type"]) => console.log("update",cust)}
+        updateCustomer={(cust: Schema["Customer"]["type"]) => console.log("update fake",cust)}
       />
       : null
     }
