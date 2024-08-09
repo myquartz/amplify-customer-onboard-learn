@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 
-import { Grid, Card, Label, Button, Flex, Fieldset, View, TextField } from '@aws-amplify/ui-react';
+import { Grid, Card, Button, Flex, Fieldset, View, TextField } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 

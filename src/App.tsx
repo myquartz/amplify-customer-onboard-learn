@@ -3,7 +3,7 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
 import { useTheme, Authenticator, View, Grid, Card,  Menu, MenuItem, Divider,
-  Message, Button, Flex, Fieldset, TextField, SelectField, SearchField, Collection } from '@aws-amplify/ui-react';
+  Message, Flex, Fieldset, SelectField, SearchField, Collection } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 import CustomerEditForm from "./CustomerEditForm";
