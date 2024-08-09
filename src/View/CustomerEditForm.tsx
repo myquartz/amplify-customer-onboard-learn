@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
+import type { Schema } from "../../amplify/data/resource";
 
 import { useTheme, Message, Grid, Card, Button, Flex, Fieldset, View, TextField, SelectField, PhoneNumberField } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
@@ -11,6 +11,9 @@ export default function CustomerEditForm(props: {
         updateCustomer: (cust: Schema["Customer"]["type"]) => void, }) {
 
     const { tokens } = useTheme();
+
+    const [invalidField, setInvalidField] = useState('');
+    const [warningMessage, setWarningMessage] = useState('');
 
     const [dialCode, setDialCode] = useState('+84');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -81,8 +84,30 @@ export default function CustomerEditForm(props: {
         return "undisclosed";
     }
 
+    useEffect(() => {
+        if(invalidField == "phoneNumber") {
+            setInvalidField('');
+            setWarningMessage('');
+        }
+    },[phoneNumber]);
+
+    function clickSubmitForm(event: any) {
+        event.preventDefault();
+        console.debug('phone',phoneNumber);
+        if(phoneNumber && phoneNumber.length < 10) {
+            setInvalidField('phoneNumber');
+            setWarningMessage('Phone number error');
+            return;
+        }
+        if(props?.customer?.customerId)
+            props.updateCustomer(toCustObj());
+        else
+            props.addCustomer(toCustObj());
+    }
+
     return (
-        <Card>
+    <Card>
+        <form onSubmit={clickSubmitForm} method="post">
         <Flex direction="column" alignItems="flex-start">
             <Fieldset legend="Metadata" variation="plain" direction="column" width="100%">
                 <Grid templateColumns={{ base: "100%", large: "50% 50%" }} templateRows={{ base: "2rem", large: "2rem 2rem" }} width="100%">
@@ -107,22 +132,30 @@ export default function CustomerEditForm(props: {
 
                 <Grid templateColumns={{ base: "100%", large: "70% 30%" }} templateRows={{ base: "2rem", large: "2rem 2rem" }} width="100%" gap={tokens.space.small}>
                     
-                    <TextField value={dateOfBirth} label="Date of birth" type="date" onChange={(e) => setDateOfBirth(e.target.value)} required={true} />
+                    <TextField value={dateOfBirth} label="Date of birth" type="date" onChange={(e) => setDateOfBirth(e.target.value)} required={true}
+                        max={(new Date()).toISOString().substring(0,10)} />
 
                 </Grid>
 
                 <Grid templateColumns={{ base: "100%", large: "50% 50%" }} templateRows={{ base: "2rem", large: "2rem 2rem" }} width="100%" gap={tokens.space.small}>
                     <TextField value={legalId} label="Legal ID (NID)" onChange={(e) => setLegalId(e.target.value)} />
                     <PhoneNumberField inputMode="tel" defaultDialCode="+84" onDialCodeChange={(e) => setDialCode(e.target.value)} 
-                        value={phoneNumber??''} label="Phone number" onChange={(e) => setPhoneNumber(e.target.value)} />
+                        value={phoneNumber??''} label="Phone number" onChange={(e) => setPhoneNumber(e.target.value)}
+                        hasError={"phoneNumber" == invalidField} />
                 </Grid>
             </Fieldset>
 
             <View>
-                { !props?.customer?.customerId ? <Button onClick={() => props.addCustomer(toCustObj())}>Add Customer</Button> : null }
-                { props?.customer?.customerId ? <Button onClick={() => props.updateCustomer(toCustObj())}>Save</Button> : null }
+                {warningMessage ?
+                    <Message colorTheme="warning">{warningMessage}</Message>
+                    : null
+                }
+            </View>
+            <View>
+                <Button type="submit">{props?.customer?.customerId ? 'Save' : 'Add' }</Button>
             </View>
         </Flex>
-        </Card>
+        </form>
+    </Card>
     );
 }
