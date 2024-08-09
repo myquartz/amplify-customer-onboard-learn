@@ -7,7 +7,7 @@ import '@aws-amplify/ui-react/styles.css';
 
 export default function CustomerEditForm(props: {
         customer: Schema["Customer"]["type"] | null,
-        addCustomer: (cust: Schema["Customer"]["type"]) => String, 
+        addCustomer: (cust: Schema["Customer"]["type"]) => void, 
         updateCustomer: (cust: Schema["Customer"]["type"]) => void, }) {
 
     const initialCust = {

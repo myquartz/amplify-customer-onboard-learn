@@ -3,7 +3,7 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
 import { useTheme, Authenticator, Loader, View, Grid, Card,  Menu, MenuItem, Divider,
-  Message, Flex, Fieldset, SelectField, SearchField, Collection } from '@aws-amplify/ui-react';
+  Message, Flex, Fieldset, Button, SelectField, SearchField, Collection } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
 import CustomerEditForm from "./CustomerEditForm";
@@ -13,10 +13,14 @@ const client = generateClient<Schema>();
 function App() {
   const [customerList, setCustomerList] = useState<Array<Schema["Customer"]["type"]>>([]);
 
-  //const [editCustomerId, setEditCustomerId ] = useState('');
   const [loader, setLoader] = useState(false);
+  const [search, setSearch] = useState(false);
   const [searchField, setSearchField ] = useState('nid');
   const [searchValue, setSearchValue] = useState('');
+
+  //const [editCustomerId, setEditCustomerId ] = useState('');
+
+  const [addCustomerForm, setAddCustomerForm ] = useState(false);
 
   const [errors, setErrors ] = useState([] as Array<Object>);
 
@@ -26,63 +30,105 @@ function App() {
 
   const onSearchClear = () => {
     setSearchValue('');
+    setSearch(false);
     setCustomerList([]);
   };
 
   const { tokens } = useTheme();
 
+  function clearError() {
+    setErrors([]);
+  }
+  function catchError(obj: any) {
+    setLoader(false);
+    console.error(obj);
+    if("object" == typeof obj)
+      setErrors(obj.errors ?? [ {message: "Error "+JSON.stringify(obj) }]);
+    else
+      setErrors([ {message: "Error "+(new String(obj)) }]);
+  }
+
   useEffect(() => {
+    if(searchValue)
+      return;
+    clearError();
+    //setSearch(false);
+    /*const sub = client.models.Customer.observeQuery().subscribe({
+      next: (data) => setCustomerList([...data.items]),
+    });
+    return () => sub.unsubscribe();*/
+  }, [searchValue, searchField]);
+
+  function forceSearch(event: any) {
+    //event.preventDefault();
+    console.debug('event', event, search, searchField, searchValue);
+    if(!searchValue) {
+      setErrors([ {message: "Enter value please" }]);
+      return;
+    }
     setLoader(true);
+    setSearch(true);
     switch(searchField) {
     case "cif":
       client.models.Customer.listCustomerByCifNumber({ cifNumber: parseInt(searchValue) }).then(
         (resp) => {
+          console.debug('resp',resp);
+          setLoader(false);
+          clearError();
           setCustomerList(resp.data)
         })
-        .catch((err) => setErrors(err.errors ?? [ {message: "Error "+JSON.stringify(err) }]));
+        .catch(catchError);
       break;
     case "phone":
       client.models.Customer.listCustomerByPhoneNumber({ phoneNumber: searchValue }).then(
         (resp) => {
+          console.debug('resp',resp);
+          setLoader(false);
+          clearError();
           setCustomerList(resp.data)
         })
-        .catch((err) => setErrors(err.errors ?? [ {message: "Error "+JSON.stringify(err) }]));
+        .catch(catchError);
       break;
     case "nid":
-      client.models.Customer.list().then( //{ legalId: searchValue }
+      client.models.Customer.listCustomerByLegalId({ legalId: searchValue }).then(
         (resp) => {
+          console.debug('resp',resp);
+          setLoader(false);
+          clearError();
           setCustomerList(resp.data)
         })
-        .catch((err) => setErrors(err.errors ?? [ {message: "Error "+JSON.stringify(err) }]));
+        .catch(catchError);
       break;
     default:
-      const sub = client.models.Customer.observeQuery().subscribe({
-        next: (data) => setCustomerList([...data.items]),
-      });
-      return () => sub.unsubscribe();
+      
     }
-  }, [searchValue, searchField]);
-
-  function forceSearch(event: any) {
-    event.preventDefault();
-    console.debug('event', event.target);
-    client.models.Customer.list().then(
-      (resp) => {
-        console.debug('data', resp);
-        setCustomerList(resp.data)
-      });
   }
 
-  /*function createTodo(event: any) {
+  function clickAddNewCustomer(event: any) {
     event.preventDefault();
     console.debug('event', event.target);
-    client.models.Todo.create({content:event.target.content.value})
-    .then( (data) => {
-      console.debug('data',data);
-      setEditForm(false);
-    });
+    setAddCustomerForm(true);
+
   }
   
+  async function addCustomer(cust: Schema["Customer"]["type"])  {
+    try {
+      const nextCif = await client.mutations.nextCIFSequence();
+      if(nextCif.errors)
+        setErrors(nextCif.errors);
+      else {
+        cust.cifNumber = nextCif.data?.currentCifNumber;
+        const custResp = await client.models.Customer.create(cust);
+        console.log(custResp);
+        if(custResp.errors)
+          setErrors(custResp.errors);
+      }
+    }
+    catch(err) {
+      setErrors([err as any]);
+    }
+  }
+  /*
   function toggleDoneState(id: string, isDoneNew: boolean) {
     const c = todos.find((i) => i.id == id);
     if(c) {
@@ -169,7 +215,7 @@ function App() {
     </Fieldset>
     {
       loader ? <Loader />
-      : customerList.length ? 
+      : search && customerList && customerList.length ? 
       <Collection
         items={customerList}
         type="list"
@@ -191,17 +237,24 @@ function App() {
         </Card>
       )}
       </Collection>
+    : search ? <div>Data not found</div>
     : <div>Please enter condition to search</div>}
+    <Fieldset legend="Toolbox">
+      <Button onClick={clickAddNewCustomer} >Add new</Button>
+    </Fieldset>
     </Flex>
   </Card>
   <Card
     columnStart="2"
     columnEnd="-1"
   >
-    <CustomerEditForm
-      customer={null} addCustomer={(cust: Schema["Customer"]["type"]) => { console.log("add",cust); return ""}}
-      updateCustomer={(cust: Schema["Customer"]["type"]) => console.log("update",cust)}
-    />
+    { addCustomerForm ?
+      <CustomerEditForm
+        customer={null} addCustomer={addCustomer}
+        updateCustomer={(cust: Schema["Customer"]["type"]) => console.log("update",cust)}
+      />
+      : null
+    }
   </Card>
   <Card
     columnStart="2"
@@ -209,18 +262,14 @@ function App() {
   >
     { errors.length ? 
       <Flex direction="column" width="100%">
-        {errors.map((err: any) => (
-          <Message colorTheme="error" heading="Backend error">{err.message}</Message>
+        {errors.map((err: any, index) => (
+          <Message key={index} colorTheme="error" heading="Backend error">{err.message}</Message>
         ))}
       </Flex>
       : <Message  colorTheme="neutral">No errors so far.</Message>
     }
   </Card>
 </Grid>
-
-          
-          
-          
          
       </View>
     )}
