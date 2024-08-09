@@ -117,6 +117,7 @@ function App() {
       if(nextCif.errors)
         setErrors(nextCif.errors);
       else {
+        cust.customerId = nextCif.data?.currentCustomerId ?? (new Date()).toISOString();
         cust.cifNumber = nextCif.data?.currentCifNumber;
         const custResp = await client.models.Customer.create(cust);
         console.log(custResp);

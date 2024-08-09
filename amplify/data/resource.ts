@@ -41,7 +41,7 @@ const schema = a.schema({
     })
     .identifier(["customerId"])
     .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber"), index("legalId")])
-    .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
+    .authorization((allow) => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
 
   CustomerIdCards: a
     .model({

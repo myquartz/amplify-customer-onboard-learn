@@ -6,9 +6,9 @@ export function request(ctx) {
     operation: 'UpdateItem',
     key: util.dynamodb.toMapValues({ "seqKey":"customerSEQ" }),
     update: {
-        expression: 'SET #cnt = #cnt + :val, #id = :genId',
-        expressionNames: { '#cnt': 'currentCifNumber', '#id':'currentCustomerId' },
-        expressionValues: util.dynamodb.toMapValues({ ':val': 1, ':genId': util.autoUlid() }),
+        expression: 'SET #cnt = #cnt + :val, #id = :genId, #ua = :nowTime',
+        expressionNames: { '#cnt': 'currentCifNumber', '#id':'currentCustomerId', '#ua': 'updatedAt' },
+        expressionValues: util.dynamodb.toMapValues({ ':val': 1, ':genId': util.autoUlid(), ':nowTime': util.time.nowISO8601() }),
     },
   };
 }
