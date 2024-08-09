@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
-import { useTheme, Authenticator, View, Grid, Card,  Menu, MenuItem, Divider,
+import { useTheme, Authenticator, Loader, View, Grid, Card,  Menu, MenuItem, Divider,
   Message, Flex, Fieldset, SelectField, SearchField, Collection } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
@@ -14,6 +14,7 @@ function App() {
   const [customerList, setCustomerList] = useState<Array<Schema["Customer"]["type"]>>([]);
 
   //const [editCustomerId, setEditCustomerId ] = useState('');
+  const [loader, setLoader] = useState(false);
   const [searchField, setSearchField ] = useState('nid');
   const [searchValue, setSearchValue] = useState('');
 
@@ -31,6 +32,7 @@ function App() {
   const { tokens } = useTheme();
 
   useEffect(() => {
+    setLoader(true);
     switch(searchField) {
     case "cif":
       client.models.Customer.listCustomerByCifNumber({ cifNumber: parseInt(searchValue) }).then(
@@ -47,7 +49,7 @@ function App() {
         .catch((err) => setErrors(err.errors ?? [ {message: "Error "+JSON.stringify(err) }]));
       break;
     case "nid":
-      client.models.Customer.listCustomerByLegalId({ legalId: searchValue }).then(
+      client.models.Customer.list().then( //{ legalId: searchValue }
         (resp) => {
           setCustomerList(resp.data)
         })
@@ -165,7 +167,9 @@ function App() {
           />
         </Flex>
     </Fieldset>
-    {customerList.length ? 
+    {
+      loader ? <Loader />
+      : customerList.length ? 
       <Collection
         items={customerList}
         type="list"
