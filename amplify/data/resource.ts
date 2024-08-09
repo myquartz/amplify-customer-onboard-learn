@@ -12,7 +12,7 @@ const schema = a.schema({
   checkIfAnAdmin: a
     .query()
     .arguments({
-      userId: a.string().default("World"),
+      userId: a.string(),
     })
     .returns(a.string())
     .handler(a.handler.function(checkIfAnAdmin))
