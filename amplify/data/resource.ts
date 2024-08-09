@@ -29,7 +29,7 @@ const schema = a.schema({
       customerId: a.id().required(),
       customerName: a.string().required(),
       dateOfBirth: a.date().required(),
-      sexual: a.enum(['male','female','undisclosed']),
+      sex: a.enum(['male','female','undisclosed']),
       cifNumber: a.integer(),
       phoneNumber: a.phone(),
       legalId: a.string(),
