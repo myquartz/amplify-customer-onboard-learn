@@ -84,7 +84,7 @@ const schema = a.schema({
     })
     .identifier(["ownCustomerId", "cardIndex"])
     .secondaryIndexes((index) => [
-      index("idNumber").sortKeys(["createdAt"]).queryField("searchByIdNumber")
+      index("idNumber").queryField("searchByIdNumber")
     ])
     .authorization((allow) => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
 
