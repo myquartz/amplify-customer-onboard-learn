@@ -35,15 +35,34 @@ const schema = a.schema({
     }))
     .authorization(allow => [allow.authenticated()]),
   
+  IdCardDataType: a
+    .customType({
+      idCardType: a.enum(['NID','CITIZEN','RESIDENCE','PASSPORT','OTHER']),
+      idNumber: a.string().required(),
+      nameOnCard: a.string().required(),
+      familyName: a.string(),
+      surName: a.string(),
+      midName: a.string(),
+      dateOfBirth: a.date().required(),
+      gender: a.enum(['male','female','undisclosed']),
+      nationalityCode: a.string().required(),
+      issueDate: a.date().required(),
+      expireDate: a.date(),
+      expiredOrInvalidState: a.boolean(),
+      otherIdData: a.json(),
+    }),
+  
   Customer: a
     .model({
       customerId: a.id().required(),
       customerName: a.string().required(),
       dateOfBirth: a.date().required(),
       sex: a.enum(['male','female','undisclosed']),
+      gender: a.enum(['male','female','undisclosed']),
       cifNumber: a.integer(),
       phoneNumber: a.phone(),
       legalId: a.string(),
+      legalIdCard: a.ref('IdCardDataType'),
       isDeleted: a.boolean(),
       idcards: a.hasMany('CustomerIdCards', 'ownCustomerId'),
       contacts: a.hasMany('CustomerContacts', 'ownCustomerId'),
@@ -59,15 +78,7 @@ const schema = a.schema({
       cardIndex: a.integer().required(),
       idNumber: a.string().required(),
       nameOnCard: a.string().required(),
-      familyName: a.string(),
-      surName: a.string(),
-      midName: a.string(),
-      dateOfBirth: a.date().required(),
-      nationalityCode: a.string().required(),
-      issueDate: a.date().required(),
-      expireDate: a.date(),
-      expiredOrInvalidState: a.boolean(),
-      otherIdData: a.json(),
+      cardData: a.ref('IdCardDataType'),
       ownCustomer: a.belongsTo("Customer","ownCustomerId"),
       updatedBy: a.string()
     })
