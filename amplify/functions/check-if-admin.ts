@@ -1,7 +1,6 @@
 //import type { Handler } from 'aws-lambda';
 import {
   AdminListGroupsForUserCommand ,
-  AdminGetUserCommand, 
   CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
 import type { Schema } from "../data/resource";
@@ -15,10 +14,12 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
   const { username: requester, issuer } = event?.identity as any;
 
   if(!requester || !issuer || !issuer.toString().startsWith('https://cognito-idp.')) {
-      return "not-cognito";
+      throw "not-cognito";
   }
   const poolId = issuer.substring(issuer.lastIndexOf('/')+1);
 
+  let isCIFOperators = false;
+  let isCIFAdmins = false;
   //check for admin first
   if(requester) {
       const command = new AdminListGroupsForUserCommand ({
@@ -26,18 +27,56 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
           Username: requester,
           Limit: 10
       });
+      
       const response = await client.send(command);
-      console.info("AdminListGroupsForUserCommand response", response);    
+      console.info("AdminListGroupsForUserCommand response", response);
+      
+      if(response.Groups) {
+        for(let g in response.Groups) {
+          const group = (g as any);
+          if(group.GroupName == "CIFOperators") {
+            isCIFOperators = true;
+          }
+          if(group.GroupName == "CIFAdmins") {
+            isCIFAdmins = true;
+          }
+        }
+      }
   }
 
-  if(username) {
-    const command = new AdminGetUserCommand({
-      UserPoolId: 'ap-southeast-1_wKzoM1p4P',
-      Username: username
+  if(isCIFAdmins && username) {
+    let userIsCIFOperators = false;
+    let userIsCIFAdmins = false;
+    const command = new AdminListGroupsForUserCommand ({
+      UserPoolId: poolId,
+      Username: requester,
+      Limit: 10
     });
+    
     const response = await client.send(command);
-    console.info("AdminGetUserCommand response", response);
+    console.info("AdminListGroupsForUserCommand username response", response);
+    
+    if(response.Groups) {
+      for(let g in response.Groups) {
+        const group = (g as any);
+        if(group.GroupName == "CIFOperators") {
+          userIsCIFOperators = true;
+        }
+        if(group.GroupName == "CIFAdmins") {
+          userIsCIFAdmins = true;
+        }
+      }
+    }
+    return {
+      userIsCIFAdmins: userIsCIFAdmins,
+      userIsCIFOperators: userIsCIFOperators,
+      requesterisCIFAdmins: isCIFAdmins,
+      requesterisCIFOperators: isCIFOperators
+    } as Schema["checkIfAnAdmin"]["returnType"];
   }
-  // your function code goes here
-  return 'not-an-admin';
+  
+  return {
+    requesterisCIFAdmins: isCIFAdmins,
+    requesterisCIFOperators: isCIFOperators
+  } as Schema["checkIfAnAdmin"]["returnType"];
 };

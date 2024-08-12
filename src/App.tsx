@@ -29,15 +29,18 @@ function App() {
     setLoader(true);
     client.queries.checkIfAnAdmin({ username: user.username }).then((resp) => {
       console.debug('checkIfAnAdmin resp', resp);
+      setLoader(false);
+      if(resp.data)
+        setIsAdmin((resp.data as any).requesterIsCIFOperators || (resp.data as any).requesterIsCIFAdmins)
     });
-    client.models.Customer.get({ customerId: user.userId }).then((resp) => {
+    /*client.models.Customer.get({ customerId: user.userId }).then((resp) => {
       console.debug('Customer get resp', resp);
       if(resp.data) {
         const cust = resp.data;
         setIsAdmin(cust.legalId == '036078007971');
       }
       setLoader(false);
-    });
+    });*/
 
   },[user]);
   //{({ signOut, user }) => (

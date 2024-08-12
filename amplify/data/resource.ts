@@ -14,7 +14,12 @@ const schema = a.schema({
     .arguments({
       username: a.string(),
     })
-    .returns(a.string())
+    .returns({
+      usernameIsCIFAdmins: a.boolean(),
+      usernameIsCIFOperators: a.boolean(),
+      requesterIsCIFAdmins: a.boolean(),
+      requesterIsCIFOperators: a.boolean(),
+    })
     .handler(a.handler.function(checkIfAnAdmin))
     .authorization(allow => [allow.publicApiKey(), allow.authenticated()]),
 
