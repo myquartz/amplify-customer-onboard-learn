@@ -1,5 +1,5 @@
 import { defineAuth } from '@aws-amplify/backend';
-import { checkIfAnAdmin } from "../functions/resource"
+import { checkIfAnAdmin, selfOnboarding } from "../functions/resource"
 
 /**
  * Define and configure your auth resource
@@ -11,7 +11,8 @@ export const auth = defineAuth({
   },
   groups: ["CIFAdmins","CIFOperators"],
   access: (allow) => [
-    allow.resource(checkIfAnAdmin).to(["getUser"]),
+    allow.resource(checkIfAnAdmin).to(["getUser","listGroupsForUser","listUsersInGroup"]),
+    allow.resource(selfOnboarding).to(["getUser"]),
   ],
   multifactor: {
     mode: 'OPTIONAL',

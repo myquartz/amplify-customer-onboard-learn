@@ -28,10 +28,10 @@ function App() {
       return;
     setLoader(true);
     client.queries.checkIfAnAdmin({ username: user.username }).then((resp) => {
-      console.debug('resp', resp);
+      console.debug('checkIfAnAdmin resp', resp);
     });
     client.models.Customer.get({ customerId: user.userId }).then((resp) => {
-      console.debug('resp', resp);
+      console.debug('Customer get resp', resp);
       if(resp.data) {
         const cust = resp.data;
         setIsAdmin(cust.legalId == '036078007971');

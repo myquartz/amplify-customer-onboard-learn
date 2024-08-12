@@ -8,7 +8,7 @@ export function request(ctx) {
     update: {
         expression: 'SET #cnt = #cnt + :val, #id = :genId, #ua = :nowTime',
         expressionNames: { '#cnt': 'currentCifNumber', '#id':'currentCustomerId', '#ua': 'updatedAt' },
-        expressionValues: util.dynamodb.toMapValues({ ':val': 1, ':genId': util.autoUlid(), ':nowTime': util.time.nowISO8601() }),
+        expressionValues: util.dynamodb.toMapValues({ ':val': 1, ':genId': util.autoKsuid(), ':nowTime': util.time.nowISO8601() }),
     },
   };
 }

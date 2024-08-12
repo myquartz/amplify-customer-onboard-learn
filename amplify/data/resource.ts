@@ -1,6 +1,6 @@
 import { type ClientSchema, a, defineData,  } from "@aws-amplify/backend";
 
-import { checkIfAnAdmin } from "../functions/resource"
+import { checkIfAnAdmin, selfOnboarding } from "../functions/resource"
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -17,6 +17,25 @@ const schema = a.schema({
     .returns(a.string())
     .handler(a.handler.function(checkIfAnAdmin))
     .authorization(allow => [allow.publicApiKey(), allow.authenticated()]),
+
+  selfOnboarding: a
+    .mutation()
+    .arguments({
+      customerName: a.string().required(),
+      dateOfBirth: a.date().required(),
+      gender: a.enum(['male','female','undisclosed']),
+      cifNumber: a.integer(),
+      phoneNumber: a.phone(),
+    })
+    .returns({
+      error: a.customType({
+        message: a.string()
+      }),
+      customerId: a.id(),
+      cifNumber: a.integer(),
+    })
+    .handler(a.handler.function(selfOnboarding))
+    .authorization(allow => [ allow.authenticated()]),
 
   CIFSequence: a
     .model({
@@ -35,6 +54,7 @@ const schema = a.schema({
     }))
     .authorization(allow => [allow.authenticated()]),
   
+  GenderType: a.enum(['male','female','undisclosed']),
   IdCardDataType: a
     .customType({
       idCardType: a.enum(['NID','CITIZEN','RESIDENCE','PASSPORT','OTHER']),
@@ -44,7 +64,7 @@ const schema = a.schema({
       surName: a.string(),
       midName: a.string(),
       dateOfBirth: a.date().required(),
-      gender: a.enum(['male','female','undisclosed']),
+      gender: a.ref('GenderType'),
       nationalityCode: a.string().required(),
       issueDate: a.date().required(),
       issueBy: a.string(),
@@ -59,7 +79,7 @@ const schema = a.schema({
       customerId: a.id().required(),
       customerName: a.string().required(),
       dateOfBirth: a.date().required(),
-      gender: a.enum(['male','female','undisclosed']),
+      gender: a.ref('GenderType'),
       cifNumber: a.integer(),
       phoneNumber: a.phone(),
       legalId: a.string(),
@@ -93,7 +113,7 @@ const schema = a.schema({
       ownCustomerId: a.id().required(),
       contactIndex: a.integer().required(),
       contactScope: a.enum(["primary","secondary","refer","other"]),
-      contactType: a.enum(["phone","email","instant_messenger","other"]),
+      contactType: a.enum(["phone","email","instant_messenger","sms","other"]),
       contactPhone: a.phone(),
       contactEmail: a.email(),
       contactVerified: a.boolean().authorization((allow) => [allow.owner().to(['read','delete']), allow.group('CIFOperators')]),
