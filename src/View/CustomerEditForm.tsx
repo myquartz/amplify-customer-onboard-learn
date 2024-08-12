@@ -20,7 +20,7 @@ export default function CustomerEditForm(props: {
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [customerName, setCustomerName] = useState('');
     const [legalId, setLegalId] = useState('');
-    const [sex, setSex] = useState('undisclosed');
+    const [gender, setGender] = useState('undisclosed');
 
     useEffect(() => {
         if(props.customer != null) {
@@ -28,7 +28,7 @@ export default function CustomerEditForm(props: {
             setCustomerName(props.customer.customerName);
             setDateOfBirth(props.customer.dateOfBirth);
             setLegalId(props.customer.legalId??'');
-            setSex(props.customer.sex??'undisclosed');
+            setGender(props.customer.gender??'undisclosed');
             //setDateOfBirth(props.customer.dateOfBirth);
             if(props.customer.phoneNumber) {
                 setPhoneNumber(props.customer.phoneNumber.substring(dialCode.length));
@@ -38,7 +38,7 @@ export default function CustomerEditForm(props: {
             setCustomerName('');
             setDateOfBirth('');
             setLegalId('');
-            setSex('undisclosed');
+            setGender('undisclosed');
             setPhoneNumber('');
         }
     },[props.customer]);
@@ -51,7 +51,7 @@ export default function CustomerEditForm(props: {
                 customerName,
                 dateOfBirth,
                 legalId,
-                sex: sexEnum(sex),
+                gender: genderEnum(gender),
             };
             return cust;
         }
@@ -61,7 +61,7 @@ export default function CustomerEditForm(props: {
                 customerName,
                 dateOfBirth,
                 legalId,
-                sex: sexEnum(sex),
+                gender: genderEnum(gender),
             } as Schema["Customer"]["type"];
             return cust;
         }
@@ -78,7 +78,7 @@ export default function CustomerEditForm(props: {
         }
     }*/
 
-    function sexEnum(st: string): any {
+    function genderEnum(st: string): any {
         if(st)
             return st;   
         return "undisclosed";
@@ -122,7 +122,7 @@ export default function CustomerEditForm(props: {
                 
                 <Grid templateColumns={{ base: "100%", large: "70% 30%" }} templateRows={{ base: "2rem", large: "2rem 2rem" }} width="100%" gap={tokens.space.small}>
                     <TextField value={customerName} label="Customer Name" onChange={(e) => setCustomerName(e.target.value)} required={true} />
-                    <SelectField label="Sex" value={sex} onChange={(e) => setSex(sexEnum(e.target.value))} required={true} >
+                    <SelectField label="Gender" value={gender} onChange={(e) => setGender(genderEnum(e.target.value))} required={true} >
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                         <option value="undisclosed">Undisclosed</option>

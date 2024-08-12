@@ -12,7 +12,7 @@ const schema = a.schema({
   checkIfAnAdmin: a
     .query()
     .arguments({
-      userId: a.string(),
+      username: a.string(),
     })
     .returns(a.string())
     .handler(a.handler.function(checkIfAnAdmin))
@@ -47,8 +47,10 @@ const schema = a.schema({
       gender: a.enum(['male','female','undisclosed']),
       nationalityCode: a.string().required(),
       issueDate: a.date().required(),
+      issueBy: a.string(),
       expireDate: a.date(),
       expiredOrInvalidState: a.boolean(),
+      idCardVerificationKey: a.string(),
       otherIdData: a.json(),
     }),
   
@@ -57,16 +59,15 @@ const schema = a.schema({
       customerId: a.id().required(),
       customerName: a.string().required(),
       dateOfBirth: a.date().required(),
-      sex: a.enum(['male','female','undisclosed']),
       gender: a.enum(['male','female','undisclosed']),
       cifNumber: a.integer(),
       phoneNumber: a.phone(),
       legalId: a.string(),
-      legalIdCard: a.ref('IdCardDataType'),
+      legalIdCardData: a.ref('IdCardDataType'),
       isDeleted: a.boolean(),
-      idcards: a.hasMany('CustomerIdCards', 'ownCustomerId'),
+      storedIdCards: a.hasMany('CustomerIdCards', 'ownCustomerId'),
       contacts: a.hasMany('CustomerContacts', 'ownCustomerId'),
-      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
+      updatedBy: a.string()
     })
     .identifier(["customerId"])
     .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber"), index("legalId")])
@@ -77,17 +78,13 @@ const schema = a.schema({
       ownCustomerId: a.id().required(),
       cardIndex: a.integer().required(),
       idNumber: a.string().required(),
-      issueDate: a.date().required(),
-      nameOnCard: a.string().required(),
-      dateOfBirth: a.date().required(),
       cardData: a.ref('IdCardDataType'),
       ownCustomer: a.belongsTo("Customer","ownCustomerId"),
       updatedBy: a.string()
     })
     .identifier(["ownCustomerId", "cardIndex"])
     .secondaryIndexes((index) => [
-      index("idNumber").sortKeys(["issueDate"]).queryField("searchByIdNumber"),
-      index("nameOnCard").sortKeys(["dateOfBirth"]).queryField("searchByName")
+      index("idNumber").queryField("searchByIdNumber")
     ])
     .authorization((allow) => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
 
@@ -102,7 +99,8 @@ const schema = a.schema({
       contactVerified: a.boolean().authorization((allow) => [allow.owner().to(['read','delete']), allow.group('CIFOperators')]),
       contactVerificationKey: a.string().authorization((allow) => [allow.owner().to(['read']), allow.group('CIFOperators')]),
       ownCustomer: a.belongsTo("Customer","ownCustomerId"),
-      updatedBy: a.string()
+      updatedBy: a.string(),
+      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["ownCustomerId", "contactIndex"])
     .secondaryIndexes((index) => [
