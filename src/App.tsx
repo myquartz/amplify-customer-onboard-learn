@@ -27,7 +27,7 @@ function App() {
     if(!user)
       return;
     setLoader(true);
-    client.queries.checkIfAnAdmin({ userId: user.userId }).then((resp) => {
+    client.queries.checkIfAnAdmin({ username: user.username }).then((resp) => {
       console.debug('resp', resp);
     });
     client.models.Customer.get({ customerId: user.userId }).then((resp) => {
