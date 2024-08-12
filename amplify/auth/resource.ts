@@ -8,6 +8,7 @@ export const auth = defineAuth({
   loginWith: {
     email: true,
   },
+  groups: ["CIFAdmins","CIFOperators"],
   
   multifactor: {
     mode: 'OPTIONAL',
