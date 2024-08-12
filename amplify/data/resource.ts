@@ -1,6 +1,6 @@
 import { type ClientSchema, a, defineData,  } from "@aws-amplify/backend";
 
-import { checkIfAnAdmin, selfOnboarding } from "../functions/resource"
+import { checkIfAnAdmin } from "../functions/resource"
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
