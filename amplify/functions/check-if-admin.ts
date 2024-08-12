@@ -14,7 +14,7 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
   
   const { username: requester, issuer } = event?.identity as any;
 
-  if(!requester || !issuer || !issuer.beginWith('https://cognito-idp.')) {
+  if(!requester || !issuer || !issuer.toString().startsWith('https://cognito-idp.')) {
       return "not-cognito";
   }
   const poolId = issuer.substring(issuer.lastIndexOf('/')+1);
