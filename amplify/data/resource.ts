@@ -9,17 +9,20 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
+  checkIfAnAdminReturnType: a
+    .customType({
+        usernameIsCIFAdmins: a.boolean(),
+        usernameIsCIFOperators: a.boolean(),
+        requesterIsCIFAdmins: a.boolean(),
+        requesterIsCIFOperators: a.boolean(),
+    }),
+
   checkIfAnAdmin: a
     .query()
     .arguments({
       username: a.string(),
     })
-    .returns({
-      usernameIsCIFAdmins: a.boolean(),
-      usernameIsCIFOperators: a.boolean(),
-      requesterIsCIFAdmins: a.boolean(),
-      requesterIsCIFOperators: a.boolean(),
-    })
+    .returns(a.ref('checkIfAnAdminReturnType'))
     .handler(a.handler.function(checkIfAnAdmin))
     .authorization(allow => [allow.publicApiKey(), allow.authenticated()]),
 
