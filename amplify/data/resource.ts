@@ -113,7 +113,7 @@ const schema = a.schema({
       ownCustomerId: a.id().required(),
       contactIndex: a.integer().required(),
       contactScope: a.enum(["primary","secondary","refer","other"]),
-      contactCapabilities: a.string().array().default(["phone","sms","instant_message"]),
+      contactCapabilities: a.string().array(), //one of ["phone","sms","instant_message"]
       contactPhone: a.phone(),
       contactEmail: a.email(),
       contactVerified: a.boolean().authorization((allow) => [allow.owner().to(['read','delete']), allow.group('CIFOperators')]),
