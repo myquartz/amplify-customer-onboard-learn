@@ -77,15 +77,17 @@ const schema = a.schema({
       ownCustomerId: a.id().required(),
       cardIndex: a.integer().required(),
       idNumber: a.string().required(),
+      issueDate: a.date().required(),
       nameOnCard: a.string().required(),
+      dateOfBirth: a.date().required(),
       cardData: a.ref('IdCardDataType'),
       ownCustomer: a.belongsTo("Customer","ownCustomerId"),
       updatedBy: a.string()
     })
     .identifier(["ownCustomerId", "cardIndex"])
     .secondaryIndexes((index) => [
-      index("idNumber").sortKeys(["dateOfBirth"]).queryField("searchByIdNumber"),
-      index("nameOnCard").queryField("searchByName")
+      index("idNumber").sortKeys(["issueDate"]).queryField("searchByIdNumber"),
+      index("nameOnCard").sortKeys(["dateOfBirth"]).queryField("searchByName")
     ])
     .authorization((allow) => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')]),
 
