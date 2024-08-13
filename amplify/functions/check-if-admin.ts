@@ -31,7 +31,14 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
       console.info("AdminListGroupsForUserCommand response", response);
       
       if(response.Groups) {
-        response.Groups.reduce((a, v) => Object.defineProperty(a, "requesterIs"+v.GroupName, { value: true }), finalResult);
+        response.Groups.forEach((v) => {
+          if(v.GroupName == "CIFAdmins")
+            finalResult.requesterIsCIFAdmins = true ;
+          else if(v.GroupName == "CIFOperators")
+            finalResult.requesterIsCIFOperators = true ;
+          else
+            console.warn("Not valid group name",v.GroupName);
+        });
         console.info("finalResult requester", finalResult);
       }
   }
@@ -47,7 +54,14 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
     console.info("AdminListGroupsForUserCommand username response", response);
     
     if(response.Groups) {
-      response.Groups.reduce((a, v) => Object.defineProperty(a, "userIs"+v.GroupName, { value: true }), finalResult);
+      response.Groups.forEach((v) => {
+        if(v.GroupName == "CIFAdmins")
+          finalResult.usernameIsCIFAdmins = true ;
+        else if(v.GroupName == "CIFOperators")
+          finalResult.usernameIsCIFOperators = true ;
+        else
+          console.warn("Not valid group name",v.GroupName);
+      });
       console.info("finalResult user", finalResult);
     }
   }
