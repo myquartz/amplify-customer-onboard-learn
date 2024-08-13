@@ -18,9 +18,8 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
   }
   const poolId = issuer.substring(issuer.lastIndexOf('/')+1);
 
-  let isCIFOperators = false;
-  let isCIFAdmins = false;
-  //check for admin first
+  let finalResult = Object.create(null);
+  //check for admin for requester first
   if(requester) {
       const command = new AdminListGroupsForUserCommand ({
           UserPoolId: poolId,
@@ -32,15 +31,8 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
       console.info("AdminListGroupsForUserCommand response", response);
       
       if(response.Groups) {
-        for(let g of response.Groups) {
-          const group = (g as any);
-          if(group.GroupName == "CIFOperators") {
-            isCIFOperators = true;
-          }
-          if(group.GroupName == "CIFAdmins") {
-            isCIFAdmins = true;
-          }
-        }
+        finalResult = response.Groups.reduce((a, v) => Object.defineProperty(a, "requesterIs"+v.GroupName, { value: true }), finalResult);
+        console.info("finalResult requester", finalResult);
       }
   }
 
@@ -57,26 +49,10 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
     console.info("AdminListGroupsForUserCommand username response", response);
     
     if(response.Groups) {
-      for(let g of response.Groups) {
-        const group = (g as any);
-        if(group.GroupName == "CIFOperators") {
-          userIsCIFOperators = true;
-        }
-        if(group.GroupName == "CIFAdmins") {
-          userIsCIFAdmins = true;
-        }
-      }
+      finalResult = response.Groups.reduce((a, v) => Object.defineProperty(a, "userIs"+v.GroupName, { value: true }), finalResult);
+        console.info("finalResult user", finalResult);
     }
-    return {
-      userIsCIFAdmins: userIsCIFAdmins,
-      userIsCIFOperators: userIsCIFOperators,
-      requesterisCIFAdmins: isCIFAdmins,
-      requesterisCIFOperators: isCIFOperators
-    } as Schema["checkIfAnAdmin"]["returnType"];
   }
   
-  return {
-    requesterisCIFAdmins: isCIFAdmins,
-    requesterisCIFOperators: isCIFOperators
-  } as Schema["checkIfAnAdmin"]["returnType"];
+  return finalResult as Schema["checkIfAnAdmin"]["returnType"];
 };
