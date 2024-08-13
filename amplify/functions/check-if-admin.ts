@@ -18,7 +18,7 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
   }
   const poolId = issuer.substring(issuer.lastIndexOf('/')+1);
 
-  let finalResult = Object.create(null);
+  const finalResult: Schema["checkIfAnAdmin"]["returnType"]  = {};
   //check for admin for requester first
   if(requester) {
       const command = new AdminListGroupsForUserCommand ({
@@ -52,5 +52,5 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
     }
   }
   
-  return finalResult as Schema["checkIfAnAdmin"]["returnType"];
+  return finalResult;
 };
