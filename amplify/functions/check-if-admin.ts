@@ -32,7 +32,7 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
       console.info("AdminListGroupsForUserCommand response", response);
       
       if(response.Groups) {
-        for(let g in response.Groups) {
+        for(let g of response.Groups) {
           const group = (g as any);
           if(group.GroupName == "CIFOperators") {
             isCIFOperators = true;
@@ -57,7 +57,7 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
     console.info("AdminListGroupsForUserCommand username response", response);
     
     if(response.Groups) {
-      for(let g in response.Groups) {
+      for(let g of response.Groups) {
         const group = (g as any);
         if(group.GroupName == "CIFOperators") {
           userIsCIFOperators = true;
