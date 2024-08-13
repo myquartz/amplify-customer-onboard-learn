@@ -31,7 +31,7 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
       console.info("AdminListGroupsForUserCommand response", response);
       
       if(response.Groups) {
-        finalResult = response.Groups.reduce((a, v) => Object.defineProperty(a, "requesterIs"+v.GroupName, { value: true }), finalResult);
+        response.Groups.reduce((a, v) => Object.defineProperty(a, "requesterIs"+v.GroupName, { value: true }), finalResult);
         console.info("finalResult requester", finalResult);
       }
   }
@@ -47,8 +47,8 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
     console.info("AdminListGroupsForUserCommand username response", response);
     
     if(response.Groups) {
-      finalResult = response.Groups.reduce((a, v) => Object.defineProperty(a, "userIs"+v.GroupName, { value: true }), finalResult);
-        console.info("finalResult user", finalResult);
+      response.Groups.reduce((a, v) => Object.defineProperty(a, "userIs"+v.GroupName, { value: true }), finalResult);
+      console.info("finalResult user", finalResult);
     }
   }
   
