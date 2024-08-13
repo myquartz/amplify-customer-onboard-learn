@@ -36,9 +36,7 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
       }
   }
 
-  if(isCIFAdmins && username) {
-    let userIsCIFOperators = false;
-    let userIsCIFAdmins = false;
+  if(finalResult['requesterIsCIFAdmins'] && username) {
     const command = new AdminListGroupsForUserCommand ({
       UserPoolId: poolId,
       Username: requester,
