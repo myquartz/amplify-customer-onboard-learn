@@ -133,10 +133,11 @@ export default function CustomerManager() {
   const [customerObj, setCustomerObj ] = useState({} as Schema["Customer"]["type"]);
 
   useEffect(() => {
-    if(!editCustomerId)
-      return;
-    clearError();
     setCustomerObj({} as Schema["Customer"]["type"]);
+    if(!editCustomerId) {
+      return;
+    }
+    clearError();
     client.models.Customer.get({ customerId: editCustomerId })
     .then(
       (resp) => {
@@ -187,7 +188,7 @@ export default function CustomerManager() {
     level={3}>Customer Management</Heading>
     <Grid
         gap={tokens.space.small}
-        templateColumns={{ base: '1fr', large: '1fr 1fr' }}
+        templateColumns={{ base: '1fr', large: '40% 60%' }}
         templateRows="5fr 1fr">
         <Card rowSpan={2}>
             <Flex direction="column" width="100%">
@@ -224,11 +225,14 @@ export default function CustomerManager() {
                     maxWidth="100%"
                     variation="outlined"
                     >
-                    <Button onClick={() => clickEditCustomer(item.customerId)} style={{float: 'right'}}>Edit</Button>
-                    CustomerID: {item.customerId}<br />
-                    CIF Number: {item.cifNumber}<br />
-                    Full name: {item.customerName}<br />
-                    Legal ID: {item.legalId}<br />  
+                      <div>CustomerID: <strong>{item.customerId}</strong></div>
+                      <Button onClick={() => clickEditCustomer(item.customerId)} style={{float: 'right'}}>Edit</Button>
+                      <div>
+                      CIF Number: <strong>{item.cifNumber}</strong><br />
+                      Full name: <strong>{item.customerName}</strong><br />
+                      Legal ID: <strong>{item.legalId}</strong><br />  
+                      </div>
+                      
                     </Card>
                 )}
                 </Collection>
@@ -244,12 +248,12 @@ export default function CustomerManager() {
         </Card>
         <Card>
             { editCustomerId && customerObj.customerId ? 
-                <CustomerEditForm
+                <CustomerEditForm cancelEdit={() => setEditCustomerId('')}
                 customer={customerObj} addCustomer={(cust: Schema["Customer"]["type"]) => console.log("add fake",cust)}
                 updateCustomer={updateCustomer}
                 />
             : addCustomerForm ?
-            <CustomerEditForm
+            <CustomerEditForm cancelEdit={() => setAddCustomerForm(false)}
                 customer={null} addCustomer={addCustomer}
                 updateCustomer={(cust: Schema["Customer"]["type"]) => console.log("update fake",cust)}
             />
