@@ -84,14 +84,14 @@ export default function CustomerSelfForm(props: {
             return;
         }
         setWarningMessage('');
-        const response = await client.mutations.selfOnboarding(toCustObj())
+        /*const response = await client.mutations.selfOnboarding(toCustObj())
         console.debug('response',response);
         if(response.errors)
           setWarningMessage(JSON.stringify(response.errors));
         else {
           setSuccessMessage("Success created "+JSON.stringify(response.data));
           setCustomerId(response.data?.customerId??'-');
-        }
+        }*/
     }
 
     return (
