@@ -12,6 +12,7 @@ import {
 } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import CustomerManager from './Admin/CustomerManager';
+import CustomerSelfOnboard from './View/CustomerSelfOnboard';
 
 const client = generateClient<Schema>();
 
@@ -78,7 +79,9 @@ function App() {
       {
         loader ? <Loader />
         : isAdmin ? <CustomerManager />
-        : <main>Hello</main>
+        : <main>
+          <CustomerSelfOnboard userProfile={user} />
+        </main>
       }
       </View>
       </Authenticator>

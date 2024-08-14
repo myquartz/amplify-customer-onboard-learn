@@ -7,5 +7,8 @@ export const checkIfAnAdmin = defineFunction({
 
 export const selfOnboarding = defineFunction({
   name: 'selfOnboarding',
-  entry: './self-onboarding.ts'
+  entry: './self-onboarding.ts',
+  environment: {
+    NAME: "World",
+  }
 });

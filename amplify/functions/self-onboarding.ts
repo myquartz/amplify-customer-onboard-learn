@@ -3,42 +3,51 @@ import {
     AdminGetUserCommand ,
     CognitoIdentityProviderClient,
   } from "@aws-sdk/client-cognito-identity-provider";
+
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { Schema } from '../data/resource';
   //import type { Schema } from "../data/resource";
   
-  const client = new CognitoIdentityProviderClient({});
+  const cogClient = new CognitoIdentityProviderClient({});
+//  const dynClient = new DynamoDBClient({});
   
-  //export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event, context) => {
+//export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event, context) => {
 export const handler: Handler = async (event, context) => {
     console.info("event", event,"\ncontext",context);
     
     const { username: requester, issuer } = event?.identity as any;
 
-    if(!requester || !issuer || !issuer.beginWith('https://cognito-idp.')) {
-        return {
-            error: {
-                message: "not-cognito"
-            }
-        };
+    if(!requester || !issuer || !issuer.startsWith('https://cognito-idp.')) {
+        throw "not-cognito";
     }
     const poolId = issuer.substring(issuer.lastIndexOf('/')+1);
 
-    //check for admin first
+    //get user information
     if(requester) {
-        const command = new AdminGetUserCommand({
+        const cogCommand = new AdminGetUserCommand({
             UserPoolId: poolId,
             Username: requester
         });
-        const response = await client.send(command);
-        console.info("response", response);    
+        const cogResponse = await cogClient.send(cogCommand);
+        console.info("response", cogResponse);
+        //check for existing
+
+        //next seq
+        const dbCommand = new UpdateItemCommand({
+            TableName: "",
+            Key: { "seqKey":{ "S": "customerSEQ" }},
+            ReturnValues: "ALL_NEW",
+            UpdateExpression: 'SET #cnt = #cnt + :val, #id = :genId, #ua = :nowTime',
+            ExpressionAttributeNames: { '#cnt': 'currentCifNumber', '#id':'currentCustomerId', '#ua': 'updatedAt' },
+            ExpressionAttributeValues: { ':val': { "N": "1" }, ':genId': { "S": cogResponse.Username??'' }, 
+                ':nowTime': { "S":(new Date()).toISOString() } },
+        });
+
         return {
             customerId: requester,
             cifNumber: 0,
-        }
+        } //as Schema["selfOnboarding"]["returnType"];
     }
 
-    return {
-        error: {
-            message: "do-nothing"
-        }
-    };
+    throw "do-nothing";
   };

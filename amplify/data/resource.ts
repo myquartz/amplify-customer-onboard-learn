@@ -1,6 +1,6 @@
 import { type ClientSchema, a, defineData,  } from "@aws-amplify/backend";
 
-import { checkIfAnAdmin } from "../functions/resource"
+import { checkIfAnAdmin,  } from "../functions/resource"
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -26,7 +26,12 @@ const schema = a.schema({
     .handler(a.handler.function(checkIfAnAdmin))
     .authorization(allow => [allow.publicApiKey(), allow.authenticated()]),
 
-  /*selfOnboarding: a
+  /*selfOnboardingReturnType: a
+    .customType({
+      customerId: a.id(),
+      cifNumber: a.integer(),
+    }),
+  selfOnboarding: a
     .mutation()
     .arguments({
       customerName: a.string().required(),
@@ -35,15 +40,9 @@ const schema = a.schema({
       cifNumber: a.integer(),
       phoneNumber: a.phone(),
     })
-    .returns({
-      error: a.customType({
-        message: a.string()
-      }),
-      customerId: a.id(),
-      cifNumber: a.integer(),
-    })
+    .returns(a.ref('selfOnboardingReturnType'))
     .handler(a.handler.function(selfOnboarding))
-    .authorization(allow => [ allow.authenticated()]),*/
+    .authorization(allow => [ allow.publicApiKey()]),*/
 
   CIFSequence: a
     .model({
@@ -54,7 +53,7 @@ const schema = a.schema({
     .identifier(["seqKey"])
     .authorization(allow => [allow.publicApiKey(), allow.authenticated().to(['read']), allow.group('CIFOperators')]),
   
-    nextCIFSequence: a
+  nextCIFSequence: a
     .mutation().returns(a.ref("CIFSequence"))
     .handler(a.handler.custom({
       dataSource: a.ref("CIFSequence"),
