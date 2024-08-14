@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
+import { withInAppMessaging } from '@aws-amplify/ui-react-notifications';
+import {
+  syncMessages,
+  identifyUser,
+  dispatchEvent
+} from 'aws-amplify/in-app-messaging';
+import { record } from 'aws-amplify/analytics';
 
 import { 
   Authenticator, useAuthenticator, 
@@ -15,6 +22,8 @@ import CustomerManager from './Admin/CustomerManager';
 import CustomerSelfOnboard from './View/CustomerSelfOnboard';
 
 const client = generateClient<Schema>();
+
+const myFirstEvent = { name: 'my_first_event' };
 
 function App() {
   //const { tokens } = useTheme();
@@ -31,9 +40,29 @@ function App() {
     client.queries.checkIfAnAdmin({ username: user.username }).then((resp) => {
       console.debug('checkIfAnAdmin resp', resp);
       setLoader(false);
-      if(resp.data)
+      if(resp.data) {
         setIsAdmin((resp.data as any).requesterIsCIFOperators || (resp.data as any).requesterIsCIFAdmins)
+        record({
+          name: 'checkIfAnAdmin'
+        });
+      }
     });
+    identifyUser({
+      userId: user.userId,
+      userProfile: {
+        
+      },
+      options: {
+        address: 'Somewhere',
+        optOut: 'NONE'
+      }
+    }).then((resp) => {
+      console.log("identifyUser resp",resp);
+      syncMessages().then((syncResp => {
+        console.log("syncMessages resp",syncResp);
+        dispatchEvent(myFirstEvent);
+      }));
+    })
     /*client.models.Customer.get({ customerId: user.userId }).then((resp) => {
       console.debug('Customer get resp', resp);
       if(resp.data) {
@@ -91,4 +120,4 @@ function App() {
   //return (<main>Hello</main>);
 }
 
-export default App;
+export default withInAppMessaging(App);
