@@ -1,18 +1,17 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
-import { selfOnboarding } from './functions/resource';
-/*import { Function } from 'aws-cdk-lib/aws-lambda';
-import { Table } from 'aws-cdk-lib/aws-dynamodb';
-*/
+import { checkIfAnAdmin, selfOnboarding } from './functions/resource';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 import {
   CfnApp,
   CfnCampaign,
   CfnSegment,
 } from "aws-cdk-lib/aws-pinpoint";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { Table, AttributeType, BillingMode } from "aws-cdk-lib/aws-dynamodb";
 import { Stack } from "aws-cdk-lib/core";
-
+import * as cdk from 'aws-cdk-lib';
 
 const backend = 
 defineBackend({
@@ -23,10 +22,54 @@ defineBackend({
 });
 
 
+const dataResources = backend.data.resources;
+
+if( (process.env.AWS_BRANCH??'') == "main") {
+  Object.keys(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
+    dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
+    switch(table) {
+      case "Customer":
+        dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
+          readCapacityUnits: 3,
+          writeCapacityUnits: 3,
+        };
+        break;
+      default:
+        dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
+          readCapacityUnits: 1,
+          writeCapacityUnits: 1,
+        };
+      }
+  });
+}
+
+
+const externalDataSourcesStack = backend.createStack("appExternalDS");
+
+const externalCIFSequenceTable = new Table(
+  externalDataSourcesStack,
+  "CIFSequence",
+  {
+    partitionKey: { "name": "seqKey", "type": AttributeType.STRING },
+    billingMode: BillingMode.PAY_PER_REQUEST,
+    removalPolicy: cdk.RemovalPolicy.DESTROY,
+  }
+);
+
+
+backend.data.addDynamoDbDataSource(
+  "extCIFSequenceDS",
+  externalCIFSequenceTable
+);
+
+//const checkIfAnAdminLambda = backend.checkIfAnAdmin;
+//checkIfAnAdminLambda.addEnvironment("CUSTOMER_TABLE", dataResources.tables["Customer"].tableName);
+///checkIfAnAdminLambda.resources.cfnResources.cfnFunction.functionName = "checkIfAnAdmin";
 //const CIFSequence = backend.data.resources.tables.CIFSequence as Table;
 //const Customer = backend.data.resources.tables.Customer as Table;
 //const CustomerContacts = backend.data.resources.tables.CustomerContacts as Table;
-//const selfOnboardingLambda = backend.selfOnboarding.resources.lambda as Function;
+//const selfOnboardingLambda = backend.selfOnboarding//.resources.lambda as Function;
+//selfOnboardingLambda.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
 
 /*
 const statement = new iam.PolicyStatement({

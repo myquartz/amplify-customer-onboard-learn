@@ -4,11 +4,13 @@ import {
   CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
 import type { Schema } from "../data/resource";
+import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
 
 const client = new CognitoIdentityProviderClient({});
+const dynClient = new DynamoDBClient({});
 
 export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event, context) => {
-  console.info("event", event,context);
+  console.info("event", event,context, process.env);
   const { username } = event.arguments;
   
   const { username: requester, issuer } = event?.identity as any;

@@ -9,6 +9,14 @@ export const auth = defineAuth({
   loginWith: {
     email: true,
   },
+    
+  userAttributes: {
+    // specify a name attribute
+    fullname: {
+      mutable: true,
+      required: true,
+    }
+  },
   groups: ["CIFAdmins","CIFOperators"],
   access: (allow) => [
     allow.resource(checkIfAnAdmin).to(["getUser","listGroupsForUser","listUsersInGroup"]),

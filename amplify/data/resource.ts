@@ -18,7 +18,7 @@ const schema = a.schema({
     })
     .returns(a.ref('checkIfAnAdminReturnType'))
     .handler(a.handler.function(checkIfAnAdmin))
-    .authorization(allow => [allow.publicApiKey(), allow.authenticated()]),
+    .authorization(allow => [allow.authenticated()]),
 
   /*selfOnboardingReturnType: a
     .customType({
@@ -39,18 +39,16 @@ const schema = a.schema({
     .authorization(allow => [ allow.publicApiKey()]),*/
 
   CIFSequence: a
-    .model({
+    .customType({
       seqKey: a.string().required(),
       currentCifNumber: a.integer().required(),
       currentCustomerId: a.id()
-    })
-    .identifier(["seqKey"])
-    .authorization(allow => [allow.publicApiKey(), allow.authenticated().to(['read']), allow.group('CIFOperators')]),
+    }),
   
   nextCIFSequence: a
     .mutation().returns(a.ref("CIFSequence"))
     .handler(a.handler.custom({
-      dataSource: a.ref("CIFSequence"),
+      dataSource: 'extCIFSequenceDS',
       entry: './increase-sequence.js'
     }))
     .authorization(allow => [allow.authenticated()]),
