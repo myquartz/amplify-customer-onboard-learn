@@ -21,22 +21,27 @@ defineBackend({
   selfOnboarding,
 });
 
+//backend.selfOnboarding.resources.lambda;
 
 const dataResources = backend.data.resources;
 
 if( (process.env.AWS_BRANCH??'') == "main") {
-  console.log("dataResources tables", dataResources.tables);
+  //console.log("dataResources tables", dataResources.tables);
   Object.keys(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
-    console.log("DynamoDB table name", table, dataResources.cfnResources.amplifyDynamoDbTables[table])
-    /*switch(table) {
+    //console.log("DynamoDB table name", table, dataResources.cfnResources.amplifyDynamoDbTables[table])
+    switch(table) {
       case "Customer":
         dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
-      case "customersByCifNumber":
         dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
           readCapacityUnits: 3,
           writeCapacityUnits: 3,
         };
+        dataResources.cfnResources.amplifyDynamoDbTables[table].setGlobalSecondaryIndexProvisionedThroughput("customersByCifNumber",{
+          readCapacityUnits: 3,
+          writeCapacityUnits: 3,
+        });
         break;
+      /*
       case "CustomerIdCards":
       case "CustomerContacts":
         dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
@@ -46,10 +51,10 @@ if( (process.env.AWS_BRANCH??'') == "main") {
           readCapacityUnits: 1,
           writeCapacityUnits: 1,
         };
-        break;
+        break;*/
       default:
         break;
-      }*/
+      }
   });
 }
 
