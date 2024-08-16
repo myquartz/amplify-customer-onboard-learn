@@ -21,7 +21,7 @@ defineBackend({
   selfOnboarding,
 });
 
-console.log("env", process.env);
+//console.log("env", process.env);
 //console.log("selfOnboarding lambda", backend.selfOnboarding.resources.lambda, backend.selfOnboarding.resources.cfnResources);
 
 const dataResources = backend.data.resources;
@@ -102,6 +102,7 @@ const statement = new iam.PolicyStatement({
 })
 
 selfOnboardingLambda.addToRolePolicy(statement)
+console.info("externalCIFSequenceTable",externalCIFSequenceTable.tableName)
 
 //CIFSequence.grantReadWriteData(selfOnboardingLambda)
 //Customer.grantReadWriteData(selfOnboardingLambda)
