@@ -8,7 +8,7 @@ import {
   CfnCampaign,
   CfnSegment,
 } from "aws-cdk-lib/aws-pinpoint";
-import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import * as iam from "aws-cdk-lib/aws-iam";
 import { Table, AttributeType, BillingMode } from "aws-cdk-lib/aws-dynamodb";
 import { Stack } from "aws-cdk-lib/core";
 import * as cdk from 'aws-cdk-lib';
@@ -91,18 +91,17 @@ backend.data.addDynamoDbDataSource(
 //const CIFSequence = backend.data.resources.tables.CIFSequence as Table;
 //const Customer = backend.data.resources.tables.Customer as Table;
 //const CustomerContacts = backend.data.resources.tables.CustomerContacts as Table;
-//const selfOnboardingLambda = backend.selfOnboarding//.resources.lambda as Function;
+const selfOnboardingLambda = backend.selfOnboarding.resources.lambda;
 //selfOnboardingLambda.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
 
-/*
 const statement = new iam.PolicyStatement({
   sid: "AllowFullReadWrite",
   actions: ["dynamodb:GetItem","dynamodb:PutItem","dynamodb:UpdateItem",],
   effect: iam.Effect.ALLOW,
-  resources: [CIFSequence.tableArn, Customer.tableArn, CustomerContacts.tableArn],
+  resources: [externalCIFSequenceTable.tableArn],
 })
 
-selfOnboardingLambda.addToRolePolicy(statement)*/
+selfOnboardingLambda.addToRolePolicy(statement)
 
 //CIFSequence.grantReadWriteData(selfOnboardingLambda)
 //Customer.grantReadWriteData(selfOnboardingLambda)
