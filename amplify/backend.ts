@@ -21,7 +21,7 @@ defineBackend({
   selfOnboarding,
 });
 
-//backend.selfOnboarding.resources.lambda;
+console.log("selfOnboarding lambda", backend.selfOnboarding.resources.lambda, backend.selfOnboarding.resources.cfnResources);
 
 const dataResources = backend.data.resources;
 
@@ -36,9 +36,17 @@ if( (process.env.AWS_BRANCH??'') == "main") {
           readCapacityUnits: 3,
           writeCapacityUnits: 3,
         };
-        dataResources.cfnResources.amplifyDynamoDbTables[table].setGlobalSecondaryIndexProvisionedThroughput("customersByCifNumber",{
+        dataResources.cfnResources.amplifyDynamoDbTables[table].setGlobalSecondaryIndexProvisionedThroughput("customersByLegalId",{
           readCapacityUnits: 3,
           writeCapacityUnits: 3,
+        });
+        dataResources.cfnResources.amplifyDynamoDbTables[table].setGlobalSecondaryIndexProvisionedThroughput("customersByCifNumber",{
+          readCapacityUnits: 1,
+          writeCapacityUnits: 1,
+        });
+        dataResources.cfnResources.amplifyDynamoDbTables[table].setGlobalSecondaryIndexProvisionedThroughput("customersByPhoneNumber",{
+          readCapacityUnits: 1,
+          writeCapacityUnits: 1,
         });
         break;
       /*
@@ -106,6 +114,7 @@ selfOnboardingLambda.addToRolePolicy(statement)*/
 /*const { cfnIdentityPool } = backend.auth.resources.cfnResources;
 cfnIdentityPool.allowUnauthenticatedIdentities = true;*/
 
+/*
 const inAppMessagingStack = backend.createStack("inAppMessaging-stack");
 
 // create a Pinpoint app
@@ -197,3 +206,4 @@ backend.addOutput({
     channels: ["IN_APP_MESSAGING"],
   },
 });
+*/
