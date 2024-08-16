@@ -21,6 +21,7 @@ defineBackend({
   selfOnboarding,
 });
 
+console.log("env", process.env);
 //console.log("selfOnboarding lambda", backend.selfOnboarding.resources.lambda, backend.selfOnboarding.resources.cfnResources);
 
 const dataResources = backend.data.resources;
@@ -28,7 +29,7 @@ const dataResources = backend.data.resources;
 if( (process.env.AWS_BRANCH??'') == "main") {
   //console.log("dataResources tables", dataResources.tables);
   Object.keys(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
-    //console.log("DynamoDB table name", table, dataResources.cfnResources.amplifyDynamoDbTables[table])
+    console.log("DynamoDB table name", table, dataResources.cfnResources.cfnTables[table]);
     switch(table) {
       case "Customer":
         dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
@@ -62,7 +63,7 @@ if( (process.env.AWS_BRANCH??'') == "main") {
         break;*/
       default:
         break;
-      }
+    }
   });
 }
 
