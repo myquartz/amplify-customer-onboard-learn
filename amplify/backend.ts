@@ -21,7 +21,7 @@ defineBackend({
   selfOnboarding,
 });
 
-console.log("selfOnboarding lambda", backend.selfOnboarding.resources.lambda, backend.selfOnboarding.resources.cfnResources);
+//console.log("selfOnboarding lambda", backend.selfOnboarding.resources.lambda, backend.selfOnboarding.resources.cfnResources);
 
 const dataResources = backend.data.resources;
 
@@ -114,7 +114,6 @@ selfOnboardingLambda.addToRolePolicy(statement)*/
 /*const { cfnIdentityPool } = backend.auth.resources.cfnResources;
 cfnIdentityPool.allowUnauthenticatedIdentities = true;*/
 
-/*
 const inAppMessagingStack = backend.createStack("inAppMessaging-stack");
 
 // create a Pinpoint app
@@ -206,4 +205,3 @@ backend.addOutput({
     channels: ["IN_APP_MESSAGING"],
   },
 });
-*/
