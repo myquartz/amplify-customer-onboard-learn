@@ -26,9 +26,9 @@ const dataResources = backend.data.resources;
 
 if( (process.env.AWS_BRANCH??'') == "main") {
   Object.keys(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
-    dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
     switch(table) {
       case "Customer":
+        dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
         dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
           readCapacityUnits: 3,
           writeCapacityUnits: 3,
@@ -36,6 +36,7 @@ if( (process.env.AWS_BRANCH??'') == "main") {
         break;
       case "CustomerIdCards":
       case "CustomerContacts":
+        dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
         dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
           readCapacityUnits: 1,
           writeCapacityUnits: 1,
@@ -46,7 +47,6 @@ if( (process.env.AWS_BRANCH??'') == "main") {
       }
   });
 }
-
 
 const externalDataSourcesStack = backend.createStack("appExternalDS");
 
