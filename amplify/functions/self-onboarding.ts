@@ -46,7 +46,7 @@ export const handler: Handler = async (event, context) => {
         console.info("dbSeqAttributes", dbSeqAttributes, "dbSeqConsumedCapacity", dbSeqConsumedCapacity);
 
         return {
-            customerId: dbSeqAttributes ? dbSeqAttributes["currentCustomerId"].N : cogResponse.Username,
+            customerId: dbSeqAttributes ? dbSeqAttributes["currentCustomerId"].S : cogResponse.Username,
             cifNumber: dbSeqAttributes ? dbSeqAttributes["currentCifNumber"].N : 0,
         } //as Schema["selfOnboarding"]["returnType"];
     }

@@ -89,7 +89,8 @@ const schema = a.schema({
       isDeleted: a.boolean(),
       storedIdCards: a.hasMany('CustomerIdCards', 'ownCustomerId'),
       contacts: a.hasMany('CustomerContacts', 'ownCustomerId'),
-      updatedBy: a.string()
+      updatedBy: a.string(),
+      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["customerId"])
     .secondaryIndexes((index) => [index("cifNumber"), index("phoneNumber"), index("legalId")])
@@ -102,7 +103,8 @@ const schema = a.schema({
       idNumber: a.string().required(),
       cardData: a.ref('IdCardDataType'),
       ownCustomer: a.belongsTo("Customer","ownCustomerId"),
-      updatedBy: a.string()
+      updatedBy: a.string(),
+      owner: a.string().authorization(allow => [allow.owner().to(['read', 'delete']), allow.group('CIFOperators')])
     })
     .identifier(["ownCustomerId", "cardIndex"])
     .secondaryIndexes((index) => [
