@@ -1,6 +1,6 @@
 //import type { Handler } from 'aws-lambda';
 import {
-  AdminListGroupsForUserCommand ,
+  AdminListGroupsForUserCommand , AdminGetUserCommand,
   CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
 import type { Schema } from "../data/resource";
@@ -23,6 +23,22 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
   const finalResult: Schema["checkIfAnAdmin"]["returnType"]  = {};
   //check for admin for requester first
   if(requester) {
+      const userGetCommand = new AdminGetUserCommand ({
+          UserPoolId: poolId,
+          Username: requester
+      });
+      const userGetResponse = await client.send(userGetCommand);
+      console.info("userGetCommand response", userGetResponse);
+
+      finalResult.requesterUsername = userGetResponse.Username;
+      if(userGetResponse.UserAttributes)
+        finalResult.requesterFullName = userGetResponse.UserAttributes.find(u => u.Name == 'name')?.Value??'';
+
+      if(finalResult.requesterUsername) {
+        //get customer Id
+        
+      }
+
       const command = new AdminListGroupsForUserCommand ({
           UserPoolId: poolId,
           Username: requester,

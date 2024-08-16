@@ -5,10 +5,13 @@ import { checkIfAnAdmin,  } from "../functions/resource"
 const schema = a.schema({
   checkIfAnAdminReturnType: a
     .customType({
-        usernameIsCIFAdmins: a.boolean(),
-        usernameIsCIFOperators: a.boolean(),
-        requesterIsCIFAdmins: a.boolean(),
-        requesterIsCIFOperators: a.boolean(),
+      requesterUsername: a.string(),
+      requesterFullName: a.string(),
+      requesterCustomerId: a.string(),
+      usernameIsCIFAdmins: a.boolean(),
+      usernameIsCIFOperators: a.boolean(),
+      requesterIsCIFAdmins: a.boolean(),
+      requesterIsCIFOperators: a.boolean(),
     }),
 
   checkIfAnAdmin: a

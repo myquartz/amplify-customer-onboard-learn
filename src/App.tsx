@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
-import { withInAppMessaging } from '@aws-amplify/ui-react-notifications';
+
+/*import { withInAppMessaging } from '@aws-amplify/ui-react-notifications';
 import {
   syncMessages,
   identifyUser,
   dispatchEvent
 } from 'aws-amplify/in-app-messaging';
-import { record } from 'aws-amplify/analytics';
+import { record } from 'aws-amplify/analytics';*/
 
 import { 
   Authenticator, useAuthenticator, 
@@ -42,12 +43,12 @@ function App() {
       setLoader(false);
       if(resp.data) {
         setIsAdmin((resp.data as any).requesterIsCIFOperators || (resp.data as any).requesterIsCIFAdmins)
-        record({
+        /*record({
           name: 'checkIfAnAdmin'
-        });
+        });*/
       }
     });
-    identifyUser({
+    /*identifyUser({
       userId: user.userId,
       userProfile: {
         
@@ -62,7 +63,7 @@ function App() {
         console.log("syncMessages resp",syncResp);
         dispatchEvent(myFirstEvent);
       }));
-    })
+    })*/
     /*client.models.Customer.get({ customerId: user.userId }).then((resp) => {
       console.debug('Customer get resp', resp);
       if(resp.data) {
@@ -77,7 +78,7 @@ function App() {
 
   return (  
     <main>
-      { user ? null : <h1>Wellcome</h1>}
+      { user ? null : <h1>Welcome {user}</h1>}
       <Authenticator>
     <View as="main" alignSelf="flex-start" height="40rem" maxWidth="100%" padding="1rem" width="80rem">
       
@@ -120,4 +121,5 @@ function App() {
   //return (<main>Hello</main>);
 }
 
-export default withInAppMessaging(App);
+export default App;
+//export default withInAppMessaging(App);
