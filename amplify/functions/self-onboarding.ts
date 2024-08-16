@@ -9,7 +9,7 @@ import { Schema } from '../data/resource';
   //import type { Schema } from "../data/resource";
   
   const cogClient = new CognitoIdentityProviderClient({});
-//  const dynClient = new DynamoDBClient({});
+  const dynClient = new DynamoDBClient({});
   
 //export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event, context) => {
 export const handler: Handler = async (event, context) => {
@@ -33,19 +33,21 @@ export const handler: Handler = async (event, context) => {
         //check for existing
 
         //next seq
-        const dbCommand = new UpdateItemCommand({
-            TableName: "",
+        const dbSeqCommand = new UpdateItemCommand({
+            TableName: process.env.CIFSEQUENCE_TABLE,
             Key: { "seqKey":{ "S": "customerSEQ" }},
             ReturnValues: "ALL_NEW",
-            UpdateExpression: 'SET #cnt = #cnt + :val, #id = :genId, #ua = :nowTime',
+            UpdateExpression: 'ADD #cnt :val SET #id = :genId, #ua = :nowTime',
             ExpressionAttributeNames: { '#cnt': 'currentCifNumber', '#id':'currentCustomerId', '#ua': 'updatedAt' },
             ExpressionAttributeValues: { ':val': { "N": "1" }, ':genId': { "S": cogResponse.Username??'' }, 
                 ':nowTime': { "S":(new Date()).toISOString() } },
         });
+        const { Attributes: dbSeqAttributes, ConsumedCapacity: dbSeqConsumedCapacity } = await dynClient.send(dbSeqCommand);
+        console.info("dbSeqAttributes", dbSeqAttributes, "dbSeqConsumedCapacity", dbSeqConsumedCapacity);
 
         return {
-            customerId: requester,
-            cifNumber: 0,
+            customerId: dbSeqAttributes ? dbSeqAttributes["currentCustomerId"].N : cogResponse.Username,
+            cifNumber: dbSeqAttributes ? dbSeqAttributes["currentCifNumber"].N : 0,
         } //as Schema["selfOnboarding"]["returnType"];
     }
 

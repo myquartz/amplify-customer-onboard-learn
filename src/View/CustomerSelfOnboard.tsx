@@ -19,6 +19,7 @@ export default function CustomerSelfForm(props: {
     const [successMessage, setSuccessMessage] = useState('');
 
     const [customerId, setCustomerId] = useState('');
+    const [cifNumber, setCifNumber] = useState(0);
     const [dialCode, setDialCode] = useState('+84');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
@@ -81,14 +82,15 @@ export default function CustomerSelfForm(props: {
             return;
         }
         setWarningMessage('');
-        /*const response = await client.mutations.selfOnboarding(toCustObj())
-        console.debug('response',response);
-        if(response.errors)
-          setWarningMessage(JSON.stringify(response.errors));
+        const { data, errors }= await client.mutations.selfOnboarding(toCustObj())
+        console.debug('response', data, errors);
+        if(errors)
+          setWarningMessage(JSON.stringify(errors));
         else {
-          setSuccessMessage("Success created "+JSON.stringify(response.data));
-          setCustomerId(response.data?.customerId??'-');
-        }*/
+          setSuccessMessage("Success created "+JSON.stringify(data));
+          setCustomerId(data?.customerId??'-');
+          setCifNumber(data?.cifNumber??0);
+        }
     }
 
     return (
@@ -99,6 +101,7 @@ export default function CustomerSelfForm(props: {
             <Fieldset legend="Metadata" variation="plain" direction="column" width="100%">
                 <Grid templateColumns={{ base: "100%", large: "60% 40%" }} templateRows={{ base: "2rem", large: "2rem" }} width="100%">
                     <View><em>Customer ID:</em> {customerId ? customerId : 'to be generated'}</View>
+                    <View><em>CIF Number:</em> {cifNumber ? cifNumber: '-' }</View>
                     <View><em>Email:</em> {props?.userProfile.signInDetails?.loginId ? props?.userProfile.signInDetails?.loginId : '-' }</View>
                 </Grid>
             </Fieldset>

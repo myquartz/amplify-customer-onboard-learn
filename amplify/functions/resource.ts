@@ -10,5 +10,6 @@ export const selfOnboarding = defineFunction({
   entry: './self-onboarding.ts',
   environment: {
     NAME: "World",
+    CIFSEQUENCE_TABLE: "CIFSequence"
   }
 });
