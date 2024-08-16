@@ -29,6 +29,7 @@ if( (process.env.AWS_BRANCH??'') == "main") {
     switch(table) {
       case "Customer":
         dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
+      case "customersByCifNumber":
         dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
           readCapacityUnits: 3,
           writeCapacityUnits: 3,
@@ -37,6 +38,8 @@ if( (process.env.AWS_BRANCH??'') == "main") {
       case "CustomerIdCards":
       case "CustomerContacts":
         dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
+      case "customerIdCardsByIdNumber":
+      case "customerContactsByContactPhone":
         dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
           readCapacityUnits: 1,
           writeCapacityUnits: 1,
