@@ -34,11 +34,15 @@ if( (process.env.AWS_BRANCH??'') == "main") {
           writeCapacityUnits: 3,
         };
         break;
-      default:
+      case "CustomerIdCards":
+      case "CustomerContacts":
         dataResources.cfnResources.amplifyDynamoDbTables[table].provisionedThroughput = {
           readCapacityUnits: 1,
           writeCapacityUnits: 1,
         };
+        break;
+      default:
+        break;
       }
   });
 }
