@@ -9,7 +9,7 @@ import { AuthUser } from "aws-amplify/auth";
 const client = generateClient<Schema>();
 
 export default function CustomerSelfForm(props: {
-        userProfile: AuthUser
+        userProfile: AuthUser, checkProfile: Schema["checkIfAnAdmin"]["returnType"]
 }) {
 
     const { tokens } = useTheme();
@@ -27,16 +27,13 @@ export default function CustomerSelfForm(props: {
     const [gender, setGender] = useState('undisclosed');
 
     useEffect(() => {
-      if(props.userProfile) {
-        setCustomerId(props.userProfile.username);
-      }
-
-      setCustomerName('');
+      setCustomerId(props.checkProfile?.requesterCustomerId || '');
+      setCustomerName(props.checkProfile?.requesterFullName || '');
       setDateOfBirth('');
       setLegalId('');
       setGender('undisclosed');
       setPhoneNumber('');
-    },[props.userProfile]);
+    },[props.checkProfile]);
 
     function toCustObj(): Schema["Customer"]["type"] {
         const cust = {

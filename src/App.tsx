@@ -30,6 +30,7 @@ function App() {
   //const { tokens } = useTheme();
   const [loader, setLoader] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [checkProfile, setCheckProfile] = useState<Schema["checkIfAnAdmin"]["returnType"]>();
   
   const { user, signOut } = useAuthenticator((context) => [context.user]);
 
@@ -41,8 +42,10 @@ function App() {
     client.queries.checkIfAnAdmin({ username: user.username }).then((resp) => {
       console.debug('checkIfAnAdmin resp', resp);
       setLoader(false);
+      
       if(resp.data) {
-        setIsAdmin((resp.data as any).requesterIsCIFOperators || (resp.data as any).requesterIsCIFAdmins)
+        setCheckProfile(resp.data);
+        setIsAdmin(resp.data.requesterIsCIFOperators || resp.data.requesterIsCIFAdmins || false)
         /*record({
           name: 'checkIfAnAdmin'
         });*/
@@ -110,7 +113,7 @@ function App() {
         loader ? <Loader />
         : isAdmin ? <CustomerManager />
         : <main>
-          <CustomerSelfOnboard userProfile={user} />
+          <CustomerSelfOnboard userProfile={user} checkProfile={check} />
         </main>
       }
       </View>

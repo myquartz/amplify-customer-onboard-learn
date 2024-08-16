@@ -1,6 +1,6 @@
 import { type ClientSchema, a, defineData,  } from "@aws-amplify/backend";
 
-import { checkIfAnAdmin,  } from "../functions/resource"
+import { checkIfAnAdmin, selfOnboarding  } from "../functions/resource"
 
 const schema = a.schema({
   checkIfAnAdminReturnType: a
@@ -23,7 +23,7 @@ const schema = a.schema({
     .handler(a.handler.function(checkIfAnAdmin))
     .authorization(allow => [allow.authenticated()]),
 
-  /*selfOnboardingReturnType: a
+  selfOnboardingReturnType: a
     .customType({
       customerId: a.id(),
       cifNumber: a.integer(),
@@ -39,7 +39,7 @@ const schema = a.schema({
     })
     .returns(a.ref('selfOnboardingReturnType'))
     .handler(a.handler.function(selfOnboarding))
-    .authorization(allow => [ allow.publicApiKey()]),*/
+    .authorization(allow => [ allow.authenticated()]),
 
   CIFSequence: a
     .customType({
