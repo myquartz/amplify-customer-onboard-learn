@@ -42,7 +42,7 @@ Amplify.configure(
     }
   );
   
-const dataClient = tracer.captureAWSv3Client(generateClient<Schema>());
+const dataClient = generateClient<Schema>();
 const cogClient = tracer.captureAWSv3Client(new CognitoIdentityProviderClient({}));
 const dynClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
   
@@ -137,6 +137,14 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
             tracer.putAnnotation("legalId" , legalId??'');
             tracer.putAnnotation("phoneNumber" , phoneNumber??'');
             console.log("createCustomer variables:",input);
+            let subsegment2: Subsegment | undefined;
+            if (segment) {
+              if(subsegment)
+                subsegment2 = subsegment.addNewSubsegment(`## createCustomer graphql`);
+              else
+                subsegment2 = segment.addNewSubsegment(`## createCustomer graphql`);
+              tracer.setSegment(subsegment2);
+            }
             try {
                 const createCustomerResponse = await dataClient.graphql({
                     query: createCustomer,
@@ -150,7 +158,16 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
             }
             catch (e) {
                 console.error("createCustomer error", e);
+                tracer.addErrorAsMetadata(e as Error);
                 throw JSON.stringify(e);
+            }
+            finally {
+              if (subsegment && subsegment2) {
+                subsegment2.close();
+                tracer.setSegment(subsegment);
+              }
+              else if(segment)
+                tracer.setSegment(segment);
             }
         }
         tracer.addResponseAsMetadata(dbSeqAttributes, process.env._HANDLER);
@@ -166,7 +183,8 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
   } finally {
     if (segment && subsegment) {
       // Close subsegment (the AWS Lambda one is closed automatically)
-      subsegment.close();
+      if(subsegment)
+        subsegment.close();
       // Set back the facade segment as active again
       tracer.setSegment(segment);
     }
