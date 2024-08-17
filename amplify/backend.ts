@@ -93,6 +93,8 @@ backend.data.addDynamoDbDataSource(
 //const Customer = backend.data.resources.tables.Customer as Table;
 //const CustomerContacts = backend.data.resources.tables.CustomerContacts as Table;
 
+
+
 const selfOnboardingLambda = backend.selfOnboarding.resources.lambda;
 
 const statement = new iam.PolicyStatement({
@@ -103,13 +105,22 @@ const statement = new iam.PolicyStatement({
 })
 
 selfOnboardingLambda.addToRolePolicy(statement)
+
 console.info("externalCIFSequenceTable",externalCIFSequenceTable.tableName)
 backend.selfOnboarding.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
 
 if( (process.env.AWS_BRANCH??'') == "main") {
+  const tracerStatement = new iam.PolicyStatement({
+    sid: "AllowTracer",
+    actions: ["xray:PutTraceSegments","xray:GetSamplingRules","xray:GetSamplingTargets",],
+    effect: iam.Effect.ALLOW,
+    resources: ["*"],
+  })
   //turn on X-Ray
   backend.checkIfAnAdmin.resources.cfnResources.cfnFunction.addPropertyOverride("TracingConfig.Mode","Active")
   backend.selfOnboarding.resources.cfnResources.cfnFunction.addPropertyOverride("TracingConfig.Mode","Active")
+  backend.checkIfAnAdmin.resources.lambda.addToRolePolicy(tracerStatement);
+  backend.selfOnboarding.resources.lambda.addToRolePolicy(tracerStatement);
 }
 
 //CIFSequence.grantReadWriteData(selfOnboardingLambda)
