@@ -2,7 +2,7 @@ import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { checkIfAnAdmin, selfOnboarding } from './functions/resource';
-import { Function } from 'aws-cdk-lib/aws-lambda';
+import { Function, TracingConfigProperty  } from 'aws-cdk-lib/aws-lambda';
 import {
   CfnApp,
   CfnCampaign,
@@ -17,7 +17,7 @@ const backend =
 defineBackend({
   auth,
   data,
-  //checkIfAnAdmin,
+  checkIfAnAdmin,
   selfOnboarding,
 });
 
@@ -106,6 +106,12 @@ const statement = new iam.PolicyStatement({
 selfOnboardingLambda.addToRolePolicy(statement)
 console.info("externalCIFSequenceTable",externalCIFSequenceTable.tableName)
 backend.selfOnboarding.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
+
+if( (process.env.AWS_BRANCH??'') == "main") {
+  //turn on X-Ray
+  backend.checkIfAnAdmin.resources.cfnResources.cfnFunction.addPropertyOverride("Properties.TracingConfig.Mode","Active")
+  backend.selfOnboarding.resources.cfnResources.cfnFunction.addPropertyOverride("Properties.TracingConfig.Mode","Active")
+}
 
 //CIFSequence.grantReadWriteData(selfOnboardingLambda)
 //Customer.grantReadWriteData(selfOnboardingLambda)
