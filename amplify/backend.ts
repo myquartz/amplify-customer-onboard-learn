@@ -30,7 +30,7 @@ if( (process.env.AWS_BRANCH??'') == "main") {
   dataResources.cfnResources.cfnGraphqlApi.xrayEnabled = true;
   //console.log("dataResources tables", dataResources.tables);
   Object.keys(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
-    console.log("DynamoDB table name", table, dataResources.cfnResources.cfnTables[table]);
+    console.log("DynamoDB table", table, backend.data.graphqlUrl);
     switch(table) {
       case "Customer":
         dataResources.cfnResources.amplifyDynamoDbTables[table].billingMode = BillingMode.PROVISIONED;
@@ -108,8 +108,8 @@ backend.selfOnboarding.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTa
 
 if( (process.env.AWS_BRANCH??'') == "main") {
   //turn on X-Ray
-  backend.checkIfAnAdmin.resources.cfnResources.cfnFunction.addPropertyOverride("Properties.TracingConfig.Mode","Active")
-  backend.selfOnboarding.resources.cfnResources.cfnFunction.addPropertyOverride("Properties.TracingConfig.Mode","Active")
+  backend.checkIfAnAdmin.resources.cfnResources.cfnFunction.addPropertyOverride("TracingConfig.Mode","Active")
+  backend.selfOnboarding.resources.cfnResources.cfnFunction.addPropertyOverride("TracingConfig.Mode","Active")
 }
 
 //CIFSequence.grantReadWriteData(selfOnboardingLambda)
