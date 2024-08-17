@@ -4,19 +4,18 @@ import {
   CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
 import type { Schema } from "../data/resource";
-import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
 
 const client = new CognitoIdentityProviderClient({});
-const dynClient = new DynamoDBClient({});
 
 export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event, context) => {
-  console.info("event", event,context, process.env);
+  console.info("event input", event.arguments, event.request);
   const { username } = event.arguments;
   
   const { username: requester, issuer } = event?.identity as any;
 
   if(!requester || !issuer || !issuer.toString().startsWith('https://cognito-idp.')) {
-      throw "not-cognito";
+    console.error("not-cognito", event.identity)
+    throw "not-cognito";
   }
   const poolId = issuer.substring(issuer.lastIndexOf('/')+1);
 
@@ -33,11 +32,6 @@ export const handler: Schema["checkIfAnAdmin"]["functionHandler"] = async (event
       finalResult.requesterUsername = userGetResponse.Username;
       if(userGetResponse.UserAttributes)
         finalResult.requesterFullName = userGetResponse.UserAttributes.find(u => u.Name == 'name')?.Value??'';
-
-      if(finalResult.requesterUsername) {
-        //get customer Id
-        
-      }
 
       const command = new AdminListGroupsForUserCommand ({
           UserPoolId: poolId,

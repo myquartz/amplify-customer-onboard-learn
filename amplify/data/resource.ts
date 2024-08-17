@@ -21,7 +21,7 @@ const schema = a.schema({
     })
     .returns(a.ref('checkIfAnAdminReturnType'))
     .handler(a.handler.function(checkIfAnAdmin))
-    .authorization(allow => [allow.authenticated()]),
+    .authorization(allow => [allow.authenticated(), allow.guest()]),
 
   selfOnboardingReturnType: a
     .customType({
@@ -34,8 +34,8 @@ const schema = a.schema({
       customerName: a.string().required(),
       dateOfBirth: a.date().required(),
       gender: a.enum(['male','female','undisclosed']),
-      cifNumber: a.integer(),
       phoneNumber: a.phone(),
+      legalId: a.string(),
     })
     .returns(a.ref('selfOnboardingReturnType'))
     .handler(a.handler.function(selfOnboarding))

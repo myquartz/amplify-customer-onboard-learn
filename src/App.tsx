@@ -22,30 +22,40 @@ import '@aws-amplify/ui-react/styles.css';
 import CustomerManager from './Admin/CustomerManager';
 import CustomerSelfOnboard from './View/CustomerSelfOnboard';
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({ authMode: "userPool" });
 
 const myFirstEvent = { name: 'my_first_event' };
 
 function App() {
   //const { tokens } = useTheme();
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkProfile, setCheckProfile] = useState<Schema["checkIfAnAdmin"]["returnType"]>();
-  
+  const [customerProfile, setCustomerProfile] = useState<Schema["Customer"]["type"]>();
+
   const { user, signOut } = useAuthenticator((context) => [context.user]);
 
   useEffect(() => {
     console.debug('user', user);
     if(!user)
       return;
-    setLoader(true);
+    setLoader(v => v+1);
     client.queries.checkIfAnAdmin({ username: user.username }).then((resp) => {
       console.debug('checkIfAnAdmin resp', resp);
-      setLoader(false);
+      setLoader(v => v-1);
       
       if(resp.data) {
         setCheckProfile(resp.data);
         setIsAdmin(resp.data.requesterIsCIFOperators || resp.data.requesterIsCIFAdmins || false)
+
+        setLoader(v => v+1);
+        client.models.Customer.get({ customerId: user.username }).then((resp) => {
+          console.debug('Customer get resp', resp);
+          if(resp.data) {
+            setCustomerProfile(resp.data);
+          }
+          setLoader(v => v-1);
+        });
         /*record({
           name: 'checkIfAnAdmin'
         });*/
@@ -67,15 +77,7 @@ function App() {
         dispatchEvent(myFirstEvent);
       }));
     })*/
-    /*client.models.Customer.get({ customerId: user.userId }).then((resp) => {
-      console.debug('Customer get resp', resp);
-      if(resp.data) {
-        const cust = resp.data;
-        setIsAdmin(cust.legalId == '036078007971');
-      }
-      setLoader(false);
-    });*/
-
+    
   },[user]);
   //{({ signOut, user }) => (
 
@@ -112,9 +114,13 @@ function App() {
       {
         loader ? <Loader />
         : isAdmin ? <CustomerManager />
-        : <main>
-          <CustomerSelfOnboard userProfile={user} checkProfile={checkProfile} />
-        </main>
+        : customerProfile ? <main>
+          Hello: {customerProfile.customerName}
+          <pre>
+            {JSON.stringify(customerProfile, null, 2)}
+          </pre>
+          </main>
+        : <CustomerSelfOnboard userProfile={user} checkProfile={checkProfile} />
       }
       </View>
       </Authenticator>

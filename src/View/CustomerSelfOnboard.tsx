@@ -36,15 +36,14 @@ export default function CustomerSelfForm(props: {
       setPhoneNumber('');
     },[props.checkProfile]);
 
-    function toCustObj(): Schema["Customer"]["type"] {
-        const cust = {
-          customerId,
+    function toCustObj(): Schema["selfOnboarding"]["args"] {
+        const cust: Schema["selfOnboarding"]["args"] = {
           phoneNumber: dialCode+''+phoneNumber,
           customerName,
           dateOfBirth,
           legalId,
           gender: genderEnum(gender),
-        } as Schema["Customer"]["type"];
+        };
   
         return cust;
     }
@@ -82,7 +81,9 @@ export default function CustomerSelfForm(props: {
             return;
         }
         setWarningMessage('');
-        const { data, errors }= await client.mutations.selfOnboarding(toCustObj())
+        const { data, errors }= await client.mutations.selfOnboarding(toCustObj(), {
+            authMode: "userPool"
+        })
         console.debug('response', data, errors);
         if(errors)
           setWarningMessage(JSON.stringify(errors));
