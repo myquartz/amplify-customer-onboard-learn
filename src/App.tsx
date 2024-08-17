@@ -115,7 +115,7 @@ function App() {
       {
         loader ? <Loader />
         : isAdmin ? <CustomerManager />
-        : customerProfile ? <CustomerView customerProfile={customerProfile} checkProfile={checkProfile} />
+        : customerProfile ? <CustomerView customerProfile={customerProfile} />
         : <CustomerSelfOnboard userProfile={user} checkProfile={checkProfile} />
       }
       </View>
