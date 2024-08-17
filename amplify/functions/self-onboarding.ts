@@ -1,4 +1,4 @@
-import type { Handler } from 'aws-lambda';
+//import type { Handler } from 'aws-lambda';
 import {
     AdminGetUserCommand ,
     CognitoIdentityProviderClient,
@@ -9,12 +9,16 @@ import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { Schema } from '../data/resource';
 import { env } from '$amplify/env/selfOnboarding';
+import { Tracer } from '@aws-lambda-powertools/tracer';
+import type { Subsegment } from 'aws-xray-sdk-core';
+
+const tracer = new Tracer({ serviceName: 'selfOnboarding' });
 
 Amplify.configure(
     {
       API: {
         GraphQL: {
-          endpoint: (env as any).AMPLIFY_DATA_GRAPHQL_ENDPOINT, // replace with your defineData name
+          endpoint: env.AMPLIFY_DATA_GRAPHQL_ENDPOINT, // replace with your defineData name
           region: env.AWS_REGION,
           defaultAuthMode: 'identityPool'
         }
@@ -38,9 +42,9 @@ Amplify.configure(
     }
   );
   
-const dataClient = generateClient<Schema>();
-const cogClient = new CognitoIdentityProviderClient({});
-const dynClient = new DynamoDBClient({});
+const dataClient = tracer.captureAWSv3Client(generateClient<Schema>());
+const cogClient = tracer.captureAWSv3Client(new CognitoIdentityProviderClient({}));
+const dynClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
   
 export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event, context) => {
 //export const handler: Handler = async (event, context) => {
@@ -48,11 +52,23 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
     
     const { username: requester, issuer } = event?.identity as any;
 
+    const segment = tracer.getSegment();
+  let subsegment: Subsegment | undefined;
+  if (segment) {
+    subsegment = segment.addNewSubsegment(`## ${process.env._HANDLER}`);
+    tracer.setSegment(subsegment);
+  }
+
+  tracer.annotateColdStart();
+  tracer.addServiceNameAnnotation();
+
     if(!requester || !issuer || !issuer.startsWith('https://cognito-idp.')) {
         throw "not-cognito";
     }
     const poolId = issuer.substring(issuer.lastIndexOf('/')+1);
-
+  tracer.putAnnotation("requester" , requester);
+  
+  try {
     //get user information
     if(requester) {
         const cogCommand = new AdminGetUserCommand({
@@ -118,6 +134,8 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
                     phoneNumber,
                     owner: requester, 
                 };
+            tracer.putAnnotation("legalId" , legalId??'');
+            tracer.putAnnotation("phoneNumber" , phoneNumber??'');
             console.log("createCustomer variables:",input);
             try {
                 const createCustomerResponse = await dataClient.graphql({
@@ -128,18 +146,30 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
                     //authMode: 'iam'
                 })
                 console.info("createCustomerResponse", createCustomerResponse);
+                tracer.putMetadata("createCustomerResponse",createCustomerResponse);
             }
             catch (e) {
                 console.error("createCustomer error", e);
                 throw JSON.stringify(e);
             }
         }
-        
+        tracer.addResponseAsMetadata(dbSeqAttributes, process.env._HANDLER);
         return {
-            customerId: dbSeqAttributes ? dbSeqAttributes["currentCustomerId"].S : cogResponse.Username,
-            cifNumber: dbSeqAttributes ? dbSeqAttributes["currentCifNumber"].N : 0,
-        } as Schema["selfOnboarding"]["returnType"];
+          customerId: dbSeqAttributes ? dbSeqAttributes["currentCustomerId"].S : cogResponse.Username,
+          cifNumber: dbSeqAttributes ? dbSeqAttributes["currentCifNumber"].N : 0,
+        } as Schema["selfOnboarding"]["returnType"];  
     }
-
+  } catch (err) {
+    // Add the error as metadata
+    tracer.addErrorAsMetadata(err as Error);
+    throw err;
+  } finally {
+    if (segment && subsegment) {
+      // Close subsegment (the AWS Lambda one is closed automatically)
+      subsegment.close();
+      // Set back the facade segment as active again
+      tracer.setSegment(segment);
+    }
+  }  
     throw "do-nothing";
   };
