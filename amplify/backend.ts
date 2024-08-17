@@ -91,8 +91,8 @@ backend.data.addDynamoDbDataSource(
 //const CIFSequence = backend.data.resources.tables.CIFSequence as Table;
 //const Customer = backend.data.resources.tables.Customer as Table;
 //const CustomerContacts = backend.data.resources.tables.CustomerContacts as Table;
+
 const selfOnboardingLambda = backend.selfOnboarding.resources.lambda;
-//selfOnboardingLambda.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
 
 const statement = new iam.PolicyStatement({
   sid: "AllowFullReadWrite",
@@ -103,6 +103,7 @@ const statement = new iam.PolicyStatement({
 
 selfOnboardingLambda.addToRolePolicy(statement)
 console.info("externalCIFSequenceTable",externalCIFSequenceTable.tableName)
+backend.selfOnboarding.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
 
 //CIFSequence.grantReadWriteData(selfOnboardingLambda)
 //Customer.grantReadWriteData(selfOnboardingLambda)

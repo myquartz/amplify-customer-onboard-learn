@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData,  } from "@aws-amplify/backend";
+import { type ClientSchema, a, defineData  } from "@aws-amplify/backend";
 
 import { checkIfAnAdmin, selfOnboarding  } from "../functions/resource"
 
@@ -132,7 +132,7 @@ const schema = a.schema({
       index("contactEmail")
     ])
     .authorization((allow) => [allow.owner(), allow.group('CIFOperators')]),
-});
+}).authorization((allow) => [allow.resource(selfOnboarding)]);
 
 export type Schema = ClientSchema<typeof schema>;
 
