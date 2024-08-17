@@ -27,6 +27,8 @@ defineBackend({
 const dataResources = backend.data.resources;
 
 if( (process.env.AWS_BRANCH??'') == "main") {
+  //enable X-Ray for production
+  dataResources.cfnResources.cfnGraphqlApi.xrayEnabled = true;
   //console.log("dataResources tables", dataResources.tables);
   Object.keys(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
     console.log("DynamoDB table name", table, dataResources.cfnResources.cfnTables[table]);
