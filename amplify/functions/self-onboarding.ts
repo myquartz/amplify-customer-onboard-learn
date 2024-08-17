@@ -12,8 +12,6 @@ import { env } from '$amplify/env/selfOnboarding';
 import { Tracer } from '@aws-lambda-powertools/tracer';
 import type { Subsegment } from 'aws-xray-sdk-core';
 
-const tracer = new Tracer({ serviceName: 'selfOnboarding' });
-
 Amplify.configure(
     {
       API: {
@@ -40,8 +38,9 @@ Amplify.configure(
         },
       },
     }
-  );
+);
   
+const tracer = new Tracer({ serviceName: 'selfOnboarding' });
 const dataClient = generateClient<Schema>();
 const cogClient = tracer.captureAWSv3Client(new CognitoIdentityProviderClient({}));
 const dynClient = tracer.captureAWSv3Client(new DynamoDBClient({}));
