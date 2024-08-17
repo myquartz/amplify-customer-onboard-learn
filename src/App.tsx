@@ -50,10 +50,12 @@ function App() {
         setIsAdmin(resp.data.requesterIsCIFOperators || resp.data.requesterIsCIFAdmins || false)
 
         setLoader(v => v+1);
-        client.models.Customer.get({ customerId: user.username }).then((resp) => {
+        client.models.Customer.get({ customerId: user.username }, {
+          selectionSet: ["customerId","customerName","cifNumber","legalId","dateOfBirth","phoneNumber","gender"]
+        }).then((resp) => {
           console.debug('Customer get resp', resp);
           if(resp.data) {
-            setCustomerProfile(resp.data);
+            setCustomerProfile(resp.data as Schema["Customer"]["type"]);
           }
           setLoader(v => v-1);
         });
