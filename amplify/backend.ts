@@ -2,7 +2,6 @@ import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { checkIfAnAdmin, selfOnboarding } from './functions/resource';
-import { Function, TracingConfigProperty  } from 'aws-cdk-lib/aws-lambda';
 import {
   CfnApp,
   CfnCampaign,
