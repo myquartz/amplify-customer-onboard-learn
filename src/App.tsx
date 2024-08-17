@@ -21,6 +21,7 @@ import {
 import '@aws-amplify/ui-react/styles.css';
 import CustomerManager from './Admin/CustomerManager';
 import CustomerSelfOnboard from './View/CustomerSelfOnboard';
+import CustomerView from "./View/CustomerView";
 
 const client = generateClient<Schema>({ authMode: "userPool" });
 
@@ -114,12 +115,7 @@ function App() {
       {
         loader ? <Loader />
         : isAdmin ? <CustomerManager />
-        : customerProfile ? <main>
-          Hello: {customerProfile.customerName}
-          <pre>
-            {JSON.stringify(customerProfile, null, 2)}
-          </pre>
-          </main>
+        : customerProfile ? <CustomerView customerProfile={customerProfile} checkProfile={checkProfile} />
         : <CustomerSelfOnboard userProfile={user} checkProfile={checkProfile} />
       }
       </View>

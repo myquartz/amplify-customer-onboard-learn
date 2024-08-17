@@ -1,9 +1,12 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node",
   "hostRequirements": {
     "cpus": 2
   },
+  "features": {
+    "aws-cli": "latest"
+  },
   "waitFor": "onCreateCommand",
   "updateContentCommand": "npm install"
-  //"postCreateCommand": "npm install -g @aws-amplify/cli"
+  //, "postCreateCommand": "git config --global user.email \"${GITHUB_EMAIL:-myquartz@gmail.com}\"; git config --global user.name \"${GITHUB_FULL_NAME:-Thach-Anh Tran}\""
 }
