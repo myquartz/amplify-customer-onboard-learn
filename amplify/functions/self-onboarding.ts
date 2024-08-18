@@ -7,6 +7,7 @@ import {
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
+import { CustomHeaders } from '@aws-amplify/data-schema/runtime';
 import { Schema } from '../data/resource';
 import { env } from '$amplify/env/selfOnboarding';
 import { Tracer } from '@aws-lambda-powertools/tracer';
@@ -137,21 +138,27 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
             tracer.putAnnotation("phoneNumber" , phoneNumber??'');
             console.log("createCustomer variables:",input);
             let subsegment2: Subsegment | undefined;
+            let segmentId: string = '';
             if (segment) {
               if(subsegment)
                 subsegment2 = subsegment.addNewSubsegment(`## createCustomer graphql`);
               else
                 subsegment2 = segment.addNewSubsegment(`## createCustomer graphql`);
               tracer.setSegment(subsegment2);
+              segmentId = subsegment2.id;
             }
             try {
+                const rootTraceId = tracer.getRootXrayTraceId();
+                const headers: CustomHeaders = {
+                  "X-Amzn-Trace-Id":"Root="+rootTraceId+(segmentId?";Parent="+segmentId:'')+";Sampled=1"
+                }
                 const createCustomerResponse = await dataClient.graphql({
                     query: createCustomer,
                     variables: {
                         ...input
                     },
                     //authMode: 'iam'
-                })
+                }, headers)
                 console.info("createCustomerResponse", createCustomerResponse);
                 tracer.putMetadata("createCustomerResponse",createCustomerResponse);
             }
