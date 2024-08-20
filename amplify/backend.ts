@@ -2,15 +2,19 @@ import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { checkIfAnAdmin, selfOnboarding } from './functions/resource';
-import {
-  CfnApp,
-  CfnCampaign,
-  CfnSegment,
-} from "aws-cdk-lib/aws-pinpoint";
+
 import * as iam from "aws-cdk-lib/aws-iam";
 import { Table, AttributeType, BillingMode } from "aws-cdk-lib/aws-dynamodb";
 import { Stack } from "aws-cdk-lib/core";
 import * as cdk from 'aws-cdk-lib';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as appsync from 'aws-cdk-lib/aws-appsync';
+
+/*import {
+  CfnApp,
+  CfnCampaign,
+  CfnSegment,
+} from "aws-cdk-lib/aws-pinpoint";*/
 
 const backend = 
 defineBackend({
@@ -80,11 +84,68 @@ const externalCIFSequenceTable = new Table(
   }
 );
 
-
 backend.data.addDynamoDbDataSource(
   "extCIFSequenceDS",
   externalCIFSequenceTable
 );
+
+const dataStack = Stack.of(backend.data)
+
+const myCustomerQueue = new sqs.Queue(dataStack, 'MyCustomerQueue');
+
+const sqsDataSource = backend.data.addHttpDataSource(
+  "extSQSDataSource",
+  `https://sqs.${dataStack.region}.amazonaws.com`,
+  {
+    authorizationConfig: {
+      signingRegion: dataStack.region,
+      signingServiceName: "sqs",
+    },
+  }
+ );
+
+
+sqsDataSource.grantPrincipal.addToPrincipalPolicy(
+  new iam.PolicyStatement({
+    actions: ["sqs:GetQueueUrl", "sqs:SendMessage"],
+    resources: ["*", myCustomerQueue.queueArn],
+  })
+ );
+
+ const myCustomerGetFunction = new appsync.AppsyncFunction(dataStack, 'customerGet', {
+  name: 'get_customer',
+  api: backend.data.resources.graphqlApi,
+  dataSource: sqsDataSource,
+  code: appsync.Code.fromAsset('data/functions/get_customer.js'),
+  runtime: appsync.FunctionRuntime.JS_1_0_0,
+});
+
+const mySqsSendFunction = new appsync.AppsyncFunction(dataStack, 'sqsSend', {
+  name: 'sqs_send_function',
+  api: backend.data.resources.graphqlApi,
+  dataSource: sqsDataSource,
+  code: appsync.Code.fromAsset('data/functions/sqs_send_function.js'),
+  runtime: appsync.FunctionRuntime.JS_1_0_0,
+});
+
+backend.data.addResolver('PipelineResolver', {
+  typeName: 'Mutation',
+  fieldName: 'selfOnboardingNotify',
+  code: appsync.Code.fromInline(`
+    // The before step
+    export function request(...args) {
+      console.log(args);
+      return {}
+    }
+
+    // The after step
+    export function response(ctx) {
+      return ctx.prev.result
+    }
+  `),
+  runtime: appsync.FunctionRuntime.JS_1_0_0,
+  pipelineConfig: [myCustomerGetFunction, mySqsSendFunction],
+});
 
 //const checkIfAnAdminLambda = backend.checkIfAnAdmin;
 //checkIfAnAdminLambda.addEnvironment("CUSTOMER_TABLE", dataResources.tables["Customer"].tableName);
@@ -92,8 +153,6 @@ backend.data.addDynamoDbDataSource(
 //const CIFSequence = backend.data.resources.tables.CIFSequence as Table;
 //const Customer = backend.data.resources.tables.Customer as Table;
 //const CustomerContacts = backend.data.resources.tables.CustomerContacts as Table;
-
-
 
 const selfOnboardingLambda = backend.selfOnboarding.resources.lambda;
 

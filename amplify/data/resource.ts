@@ -41,6 +41,17 @@ const schema = a.schema({
     .handler(a.handler.function(selfOnboarding))
     .authorization(allow => [ allow.authenticated()]),
 
+  sqsSendMessageResponseType: a
+    .customType({
+      customerId: a.id(),
+      cifNumber: a.integer(),
+    }),
+    
+  selfOnboardingNotify: a
+    .mutation()
+    .returns(a.ref('selfOnboardingReturnType'))
+    .authorization(allow => [ allow.authenticated()]),
+
   CIFSequence: a
     .customType({
       seqKey: a.string().required(),
