@@ -112,11 +112,12 @@ sqsDataSource.grantPrincipal.addToPrincipalPolicy(
   })
  );
 
+ /*
  const myCustomerGetFunction = new appsync.AppsyncFunction(dataStack, 'customerGet', {
   name: 'get_customer',
   api: backend.data.resources.graphqlApi,
   dataSource: sqsDataSource,
-  code: appsync.Code.fromAsset('data/functions/get_customer.js'),
+  code: appsync.Code.fromAsset('amplify/data/functions/get_customer.js'),
   runtime: appsync.FunctionRuntime.JS_1_0_0,
 });
 
@@ -124,11 +125,16 @@ const mySqsSendFunction = new appsync.AppsyncFunction(dataStack, 'sqsSend', {
   name: 'sqs_send_function',
   api: backend.data.resources.graphqlApi,
   dataSource: sqsDataSource,
-  code: appsync.Code.fromAsset('data/functions/sqs_send_function.js'),
+  code: appsync.Code.fromAsset('amplify/data/functions/sqs_send_function.js'),
   runtime: appsync.FunctionRuntime.JS_1_0_0,
 });
+*/
 
-backend.data.addResolver('PipelineResolver', {
+//backend.data.resources.functions["nextCIFSequence"].
+//backend.data.generatedFunctionSlots["nextCIFSequence"]
+console.log("cfnFunctions", backend.data.resources.cfnResources.cfnFunctions);
+/*
+backend.data.resources.graphqlApi.createResolver('PipelineResolver', {
   typeName: 'Mutation',
   fieldName: 'selfOnboardingNotify',
   code: appsync.Code.fromInline(`
@@ -146,6 +152,7 @@ backend.data.addResolver('PipelineResolver', {
   runtime: appsync.FunctionRuntime.JS_1_0_0,
   pipelineConfig: [myCustomerGetFunction, mySqsSendFunction],
 });
+*/
 
 //const checkIfAnAdminLambda = backend.checkIfAnAdmin;
 //checkIfAnAdminLambda.addEnvironment("CUSTOMER_TABLE", dataResources.tables["Customer"].tableName);
