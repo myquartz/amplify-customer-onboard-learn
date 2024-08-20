@@ -2,21 +2,41 @@ import { util } from '@aws-appsync/utils';
 
 export function request(ctx) {
   
-  return {
-    operation: 'UpdateItem',
-    key: util.dynamodb.toMapValues({ "seqKey":"customerSEQ" }),
-    update: {
-        expression: 'ADD #cnt :val SET #id = :genId, #ua = :nowTime',
-        expressionNames: { '#cnt': 'currentCifNumber', '#id':'currentCustomerId', '#ua': 'updatedAt' },
-        expressionValues: util.dynamodb.toMapValues({ ':val': 1, ':genId': util.autoKsuid(), ':nowTime': util.time.nowISO8601() }),
-    },
-  };
+    return {
+		version: '2018-05-29',
+		method: 'POST',
+		params: {
+			headers: {
+				'Content-Type': 'application/x-amz-json-1.0',
+				'X-Amz-Target': 'AmazonSQS.SendMessage'
+			},
+			"body": {
+    "QueueUrl": "https://sqs.ap-southeast-1.amazonaws.com/722273251097/EmailSendingQueue",
+    "MessageBody": JSON.stringify(ctx.prev.result),
+    "MessageAttributes": {
+        "identity": {
+            "DataType": "String",
+            "StringValue": JSON.stringify(ctx.identity)
+        },
+        "request": {
+            "DataType": "String",
+            "StringValue": JSON.stringify(ctx.request)
+        }
+    }
+}
+		},
+		resourcePath: '/',
+	}
 }
 
 export function response(ctx) {
-      const { error, result } = ctx;
+    const { error, result } = ctx;
     if (error) {
         return util.appendError(error.message, error.type, result);
     }
-    return result;
+    if (ctx.result.statusCode == 200) {
+		return JSON.parse(ctx.result.body);
+    } else {
+        return util.appendError(ctx.result.body, "ctx.result.statusCode")
+    }
 }
