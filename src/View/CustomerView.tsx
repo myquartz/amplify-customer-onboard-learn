@@ -8,11 +8,32 @@ import { useTheme, Message, Grid, Card, Button, Flex, Fieldset, View, TextField,
 import '@aws-amplify/ui-react/styles.css';
 import { AuthUser } from "aws-amplify/auth";
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({
+    authMode: "userPool"
+});
 
 export default function CustomerView(props: {
     customerProfile: Schema["Customer"]["type"]
 }) {
+
+    const [message, setMessage] = useState('');
+
+    async function sendNotify() {
+        try {
+            const { data, errors } = await client.mutations.sendNotify({
+                customerId: props.customerProfile.customerId
+            });
+            if(errors) {
+                setMessage("Error "+JSON.stringify(errors))
+            }
+            else { 
+                setMessage("Sent "+JSON.stringify(data))
+            }
+        }
+        catch(err) {
+            setMessage("Error: "+err);
+        }
+    }
 
     return (
         <View>
@@ -24,6 +45,8 @@ export default function CustomerView(props: {
             <TextField label="Legal ID" value={props.customerProfile.legalId??'-'} isReadOnly />
             <TextField label="Phone Number" value={props.customerProfile.phoneNumber??'-'} isReadOnly />
             <TextField label="CIF Number" value={props.customerProfile.cifNumber??'-'} isReadOnly />
+            { message ? <Message>{message}</Message> : null}
+            <Button onClick={sendNotify}>Engaged</Button>
         </View>
     );
 }

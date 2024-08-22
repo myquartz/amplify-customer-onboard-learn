@@ -6,7 +6,9 @@ import { useTheme, Message, Grid, Card, Button, Flex, Fieldset, View, TextField,
 import '@aws-amplify/ui-react/styles.css';
 import { AuthUser } from "aws-amplify/auth";
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({
+    authMode: "userPool"
+});
 
 export default function CustomerSelfForm(props: {
         userProfile: AuthUser, checkProfile: Schema["checkIfAnAdmin"]["returnType"]

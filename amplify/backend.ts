@@ -104,13 +104,17 @@ const sqsDataSource = backend.data.addHttpDataSource(
   }
  );
 
-
 sqsDataSource.grantPrincipal.addToPrincipalPolicy(
   new iam.PolicyStatement({
     actions: ["sqs:GetQueueUrl", "sqs:SendMessage"],
     resources: ["*", myCustomerQueue.queueArn],
   })
  );
+
+ console.log("SQS Queue Name and Queue URL", myCustomerQueue.queueName, myCustomerQueue.queueUrl)
+ backend.data.resources.cfnResources.cfnGraphqlApi.environmentVariables = {
+  SQS_QUEUE_URL: myCustomerQueue.queueUrl,
+ };
 
  /*
  const myCustomerGetFunction = new appsync.AppsyncFunction(dataStack, 'customerGet', {
@@ -132,7 +136,7 @@ const mySqsSendFunction = new appsync.AppsyncFunction(dataStack, 'sqsSend', {
 
 //backend.data.resources.functions["nextCIFSequence"].
 //backend.data.generatedFunctionSlots["nextCIFSequence"]
-console.log("cfnFunctions", backend.data.resources.cfnResources.cfnFunctions);
+
 /*
 backend.data.resources.graphqlApi.createResolver('PipelineResolver', {
   typeName: 'Mutation',
@@ -174,6 +178,7 @@ selfOnboardingLambda.addToRolePolicy(statement)
 
 console.info("externalCIFSequenceTable",externalCIFSequenceTable.tableName)
 backend.selfOnboarding.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
+//backend.selfOnboarding.addEnvironment("CUSTOMER_TABLE", backend.data.resources.cfnResources.cfnTables)
 
 if( (process.env.AWS_BRANCH??'') == "main") {
   const tracerStatement = new iam.PolicyStatement({
