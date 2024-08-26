@@ -10,15 +10,19 @@ import {
 } from 'aws-amplify/in-app-messaging';
 import { record } from 'aws-amplify/analytics';*/
 
-import { 
+import {   
   Authenticator, useAuthenticator, 
   View, 
-  //useTheme,
+  ColorMode, ThemeProvider,
   //Grid,
   Loader,
   Card,  Menu, MenuItem, Divider,
+  useTheme,
+  Heading,
 } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import { theme } from './Themes';
+
 import CustomerManager from './Admin/CustomerManager';
 import CustomerSelfOnboard from './View/CustomerSelfOnboard';
 import CustomerView from "./View/CustomerView";
@@ -28,13 +32,16 @@ const client = generateClient<Schema>({ authMode: "userPool" });
 const myFirstEvent = { name: 'my_first_event' };
 
 function App() {
-  //const { tokens } = useTheme();
+
+  const [colorMode, setColorMode] = useState<ColorMode>('system');
   const [loader, setLoader] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkProfile, setCheckProfile] = useState<Schema["checkIfAnAdmin"]["returnType"]>();
   const [customerProfile, setCustomerProfile] = useState<Schema["Customer"]["type"]>();
 
   const { user, signOut } = useAuthenticator((context) => [context.user]);
+
+  const { tokens } = useTheme();
 
   useEffect(() => {
     console.debug('user', user);
@@ -51,7 +58,7 @@ function App() {
 
         setLoader(v => v+1);
         client.models.Customer.get({ customerId: user.username }, {
-          selectionSet: ["customerId","customerName","cifNumber","legalId","dateOfBirth","phoneNumber","gender"]
+          selectionSet: ["customerId","customerName","cifNumber","legalId","dateOfBirth","phoneNumber","gender", "createdAt"]
         }).then((resp) => {
           console.debug('Customer get resp', resp);
           if(resp.data) {
@@ -84,16 +91,13 @@ function App() {
   },[user]);
   //{({ signOut, user }) => (
 
-  return (  
-    <main>
-      { user ? null : <h1>Welcome {user}</h1>}
-      <Authenticator>
-    <View as="main" alignSelf="flex-start" height="40rem" maxWidth="100%" padding="1rem" width="80rem">
-      
-        <Card
-          style={{ height: '4rem' }}
-        >
-          <View id="loginId" style={{ float: 'right', marginRight: '1rem', lineHeight: '2rem' }}>{user?.signInDetails?.loginId}</View>
+  const nextColorMode = colorMode == 'system' ? 'dark': colorMode == 'dark' ? 'light' : 'system';
+  return (
+  <ThemeProvider theme={theme} colorMode={colorMode}>
+    <View alignSelf="flex-start" width="100%" height="100%" padding="0" overflow="hidden" backgroundColor={tokens.colors.background.primary}>
+      { user ? <View backgroundColor={tokens.colors.background.tertiary}
+          style={{ height: '4rem', padding: '1rem' }}>
+          <View id="loginId" style={{ float: 'right', marginRight: '0', lineHeight: '2rem' }} color={tokens.colors.font.focus}>{user?.signInDetails?.loginId}</View>
           <Menu>
             <MenuItem onClick={() => alert('Download')}>
               Download
@@ -101,8 +105,8 @@ function App() {
             <MenuItem onClick={() => alert('Create a Copy')}>
               Create a Copy
             </MenuItem>
-            <MenuItem onClick={() => alert('Mark as Draft')}>
-              Mark as Draft
+            <MenuItem onClick={() => setColorMode(nextColorMode)}>
+              To {nextColorMode} mode
             </MenuItem>
             <Divider />
             <MenuItem isDisabled onClick={() => alert('Delete')}>
@@ -112,20 +116,22 @@ function App() {
               Sign out
             </MenuItem>
           </Menu>
-        </Card>
-
-      {
-        loader ? <Loader />
-        : isAdmin ? <CustomerManager />
-        : customerProfile ? <CustomerView customerProfile={customerProfile} />
-        : <CustomerSelfOnboard userProfile={user} checkProfile={checkProfile} />
-      }
+        </View> : <View alignSelf="flex-start" textAlign="center" width="100%" padding="0" height="6rem" paddingTop="2rem">
+          <Heading level={2} color={tokens.colors.font.focus}>Welcome to Onboarding</Heading>
+        </View>}
+      <Authenticator>
+      <View as="main" alignSelf="flex-start" width="100%" padding="1rem">
+        {
+          loader ? <Loader />
+          : isAdmin ? <CustomerManager />
+          : customerProfile ? <CustomerView customerProfile={customerProfile} />
+          : <CustomerSelfOnboard userProfile={user} checkProfile={checkProfile} />
+        } 
       </View>
       </Authenticator>
-    </main>
+    </View>
+  </ThemeProvider>
   );
-  //)}
-  //return (<main>Hello</main>);
 }
 
 export default App;
