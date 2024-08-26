@@ -136,7 +136,7 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
                 };
             tracer.putAnnotation("legalId" , legalId??'');
             tracer.putAnnotation("phoneNumber" , phoneNumber??'');
-            console.log("createCustomer variables:",input);
+            console.log("createCustomer variables:", input);
             let subsegment2: Subsegment | undefined;
             let segmentId: string = '';
             if (segment) {
@@ -149,9 +149,12 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
             }
             try {
                 const rootTraceId = tracer.getRootXrayTraceId();
+                
                 const headers: CustomHeaders = {
-                  "X-Amzn-Trace-Id":"Root="+rootTraceId+(segmentId?";Parent="+segmentId:'')+";Sampled=1"
                 }
+
+                //if(rootTraceId)
+                  //headers["X-Amzn-Trace-Id"] = "Root="+rootTraceId+(segmentId?";Parent="+segmentId:'')+";Sampled=1";
                 const createCustomerResponse = await dataClient.graphql({
                     query: createCustomer,
                     variables: {
@@ -159,7 +162,7 @@ export const handler: Schema["selfOnboarding"]["functionHandler"] = async (event
                     },
                     //authMode: 'iam'
                 }, headers)
-                console.info("createCustomerResponse", createCustomerResponse);
+                console.info("createCustomerResponse", rootTraceId, createCustomerResponse);
                 tracer.putMetadata("createCustomerResponse",createCustomerResponse);
             }
             catch (e) {

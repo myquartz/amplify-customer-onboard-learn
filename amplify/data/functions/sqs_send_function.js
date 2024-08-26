@@ -11,7 +11,7 @@ export function request(ctx) {
 				'X-Amz-Target': 'AmazonSQS.SendMessage'
 			},
 			"body": {
-    "QueueUrl": "https://sqs.ap-southeast-1.amazonaws.com/722273251097/EmailSendingQueue",
+    "QueueUrl": ctx.env.SQS_QUEUE_URL,
     "MessageBody": JSON.stringify(ctx.prev.result),
     "MessageAttributes": {
         "identity": {

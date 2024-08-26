@@ -104,7 +104,6 @@ const sqsDataSource = backend.data.addHttpDataSource(
   }
  );
 
-
 sqsDataSource.grantPrincipal.addToPrincipalPolicy(
   new iam.PolicyStatement({
     actions: ["sqs:GetQueueUrl", "sqs:SendMessage"],
@@ -112,11 +111,17 @@ sqsDataSource.grantPrincipal.addToPrincipalPolicy(
   })
  );
 
+ console.log("SQS Queue Name and Queue URL", myCustomerQueue.queueName, myCustomerQueue.queueUrl)
+ backend.data.resources.cfnResources.cfnGraphqlApi.environmentVariables = {
+  SQS_QUEUE_URL: myCustomerQueue.queueUrl,
+ };
+
+ /*
  const myCustomerGetFunction = new appsync.AppsyncFunction(dataStack, 'customerGet', {
   name: 'get_customer',
   api: backend.data.resources.graphqlApi,
   dataSource: sqsDataSource,
-  code: appsync.Code.fromAsset('data/functions/get_customer.js'),
+  code: appsync.Code.fromAsset('amplify/data/functions/get_customer.js'),
   runtime: appsync.FunctionRuntime.JS_1_0_0,
 });
 
@@ -124,11 +129,16 @@ const mySqsSendFunction = new appsync.AppsyncFunction(dataStack, 'sqsSend', {
   name: 'sqs_send_function',
   api: backend.data.resources.graphqlApi,
   dataSource: sqsDataSource,
-  code: appsync.Code.fromAsset('data/functions/sqs_send_function.js'),
+  code: appsync.Code.fromAsset('amplify/data/functions/sqs_send_function.js'),
   runtime: appsync.FunctionRuntime.JS_1_0_0,
 });
+*/
 
-backend.data.addResolver('PipelineResolver', {
+//backend.data.resources.functions["nextCIFSequence"].
+//backend.data.generatedFunctionSlots["nextCIFSequence"]
+
+/*
+backend.data.resources.graphqlApi.createResolver('PipelineResolver', {
   typeName: 'Mutation',
   fieldName: 'selfOnboardingNotify',
   code: appsync.Code.fromInline(`
@@ -146,6 +156,7 @@ backend.data.addResolver('PipelineResolver', {
   runtime: appsync.FunctionRuntime.JS_1_0_0,
   pipelineConfig: [myCustomerGetFunction, mySqsSendFunction],
 });
+*/
 
 //const checkIfAnAdminLambda = backend.checkIfAnAdmin;
 //checkIfAnAdminLambda.addEnvironment("CUSTOMER_TABLE", dataResources.tables["Customer"].tableName);
@@ -167,6 +178,7 @@ selfOnboardingLambda.addToRolePolicy(statement)
 
 console.info("externalCIFSequenceTable",externalCIFSequenceTable.tableName)
 backend.selfOnboarding.addEnvironment("CIFSEQUENCE_TABLE", externalCIFSequenceTable.tableName)
+//backend.selfOnboarding.addEnvironment("CUSTOMER_TABLE", backend.data.resources.cfnResources.cfnTables)
 
 if( (process.env.AWS_BRANCH??'') == "main") {
   const tracerStatement = new iam.PolicyStatement({

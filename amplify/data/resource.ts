@@ -38,20 +38,34 @@ const schema = a.schema({
       legalId: a.string(),
     })
     .returns(a.ref('selfOnboardingReturnType'))
-    .handler(a.handler.function(selfOnboarding))
+    .handler([a.handler.function(checkIfAnAdmin), a.handler.function(selfOnboarding)])
     .authorization(allow => [ allow.authenticated()]),
+
 
   sqsSendMessageResponseType: a
     .customType({
-      customerId: a.id(),
-      cifNumber: a.integer(),
+      MessageId: a.id(),
+      MD5OfMessageAttributes: a.string(),
+      MD5OfMessageBody: a.string()
     }),
-    
-  selfOnboardingNotify: a
-    .mutation()
-    .returns(a.ref('selfOnboardingReturnType'))
-    .authorization(allow => [ allow.authenticated()]),
 
+  sendNotify: a
+    .mutation()
+    .arguments({
+      customerId: a.id()
+    })
+    .returns(a.ref("sqsSendMessageResponseType"))
+    .handler([
+      a.handler.custom({
+        dataSource: a.ref("Customer"),
+        entry: './functions/get_customer.js'
+      }),
+      a.handler.custom({
+        dataSource: "extSQSDataSource",
+        entry: './functions/sqs_send_function.js'
+      }),
+    ]).authorization(allow => [ allow.authenticated()]),
+    
   CIFSequence: a
     .customType({
       seqKey: a.string().required(),
@@ -151,7 +165,7 @@ export const data = defineData({
   schema,
   authorizationModes: {
     //defaultAuthorizationMode: 'userPool', //identityPool, userPool, apiKey
-    defaultAuthorizationMode: 'iam',
+    defaultAuthorizationMode: 'identityPool',
     // API Key is used for a.allow.public() rules
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
